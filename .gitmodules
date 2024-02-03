@@ -1,0 +1,3 @@
+[submodule "beauty_models"]
+	path = beauty_models
+	url = https://github.com/beaty-sas/beauty_models.git
