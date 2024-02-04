@@ -8,8 +8,54 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 fastapi = "^0.109.0"
+uvicorn = "^0.27.0.post1"
+gunicorn = "^21.2.0"
+sqlalchemy = "^2.0.25"
+ujson = "^5.9.0"
+pydantic-settings = "^2.1.0"
+geoalchemy2 = "^0.14.3"
+python-json-logger = "^2.0.7"
+asyncpg = "^0.29.0"
+uvloop = "^0.19.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.1.1"
+darglint = "^1.8.1"
+flake8 = "^7.0.0"
+flake8-bandit = "^4.1.1"
+flake8-comprehensions = "^3.14.0"
+flake8-eradicate = "^1.5.0"
+flake8-isort = "^6.1.1"
+flake8-spellcheck = "^0.28.0"
+bandit = "^1.7.7"
+isort = "^5.13.2"
+mypy = "^1.8.0"
+pep8-naming = "^0.13.3"
+pre-commit = "^3.6.0"
+pre-commit-hooks = "^4.5.0"
+pytype = "^2024.1.24"
+types-ujson = "^5.9.0.0"
+types-setuptools = "^69.0.0.20240125"
 
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+target-version = ['py310']
+line-length = 120
+skip-string-normalization = true
+exclude = '''
+(
+    | .+/migrations
+)
+'''
+
+[tool.isort]
+profile = "black"
+force_single_line=true
+order_by_type=false
+line_length = 120
+skip = 'migrations'
+src_paths = ['apps', 'settings']
