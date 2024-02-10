@@ -6,4 +6,4 @@ DEFAULT_SRID = 102013  # Europe
 
 class ErrorMessages:
     DO_NOT_HAVE_PERMISSIONS = 'You don\'t have permission.'
-    OBJECT_NOT_FOUND = '{object_type} with ID {id} not found.'
+    OBJECT_NOT_FOUND = '{object_type} with ID #{id} not found.'

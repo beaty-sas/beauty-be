@@ -30,3 +30,6 @@ pythonjsonlogger
 loc
 redoc
 sessionmaker
+autouse
+func
+selectinload

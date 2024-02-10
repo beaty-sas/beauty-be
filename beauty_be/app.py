@@ -3,6 +3,9 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 from beauty_be import __version__
 from beauty_be.api import base
+from beauty_be.api import booking
+from beauty_be.api import business
+from beauty_be.api import working_hours
 from beauty_be.conf import settings
 from beauty_be.conf.db import async_session
 from beauty_be.conf.settings import Settings
@@ -13,6 +16,9 @@ from beauty_models.beauty_models.models import metadata
 
 def init_routes(app: 'FastAPI') -> None:
     app.include_router(base.router, tags=['Base'])
+    app.include_router(booking.router, tags=['Booking'])
+    app.include_router(business.router, tags=['Business'])
+    app.include_router(working_hours.router, tags=['Working Hours'])
 
 
 def init_db(app_settings: Settings):
@@ -25,7 +31,7 @@ def create_app(app_settings: Settings | None = None) -> FastAPI:
     app_settings = app_settings if app_settings is not None else settings
     init_db(app_settings)
     app = FastAPI(
-        title='Companion',
+        title='Beauty API',
         debug=app_settings.DEBUG,
         docs_url='/docs',
         redoc_url='/redoc',

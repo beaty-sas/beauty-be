@@ -13,9 +13,6 @@ repos:
         files: ^beauty_be/.*\.py$
       - id: debug-statements
         files: ^beauty_be/.*\.py$
-      - id: name-tests-test
-        exclude: factories.py
-        files: ^beauty_be/(.+/)?tests/.+\.py$
       - id: double-quote-string-fixer
         files: ^beauty_be/.*\.py$
   - repo: https://github.com/psf/black
