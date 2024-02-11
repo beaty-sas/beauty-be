@@ -2,6 +2,7 @@ from datetime import timedelta
 from datetime import timezone
 from typing import Sequence
 
+from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from beauty_be.conf.constants import ErrorMessages
@@ -9,6 +10,8 @@ from beauty_be.exceptions import DoesNotExistError
 from beauty_be.schemas.booking import BookingCreateSchema
 from beauty_be.services.base import BaseService
 from beauty_models.beauty_models.models import Booking
+from beauty_models.beauty_models.models import Business
+from beauty_models.beauty_models.models import Merchant
 from beauty_models.beauty_models.models import Offer
 from beauty_models.beauty_models.models import User
 
@@ -25,7 +28,7 @@ class BookingService(BaseService[Booking]):
         raise DoesNotExistError(ErrorMessages.OBJECT_NOT_FOUND.format(object_type=self.MODEL.__name__, id=booking_id))
 
     async def create_booking(self, data: BookingCreateSchema, offers: Sequence[Offer], user: User) -> Booking:
-        duration = timedelta(seconds=sum(offer.duration for offer in offers))
+        duration = timedelta(seconds=sum(offer.duration for offer in offers))  # type: ignore
         start_time = data.start_time.replace(tzinfo=timezone.utc)
         booking = self.MODEL(
             start_time=start_time,
@@ -37,3 +40,10 @@ class BookingService(BaseService[Booking]):
         booking.offers.extend(offers)
         obj = await self.insert_obj(booking)
         return await self.get_info(obj.id)
+
+    async def get_by_business_id(self, business_id: int, merchant: Merchant) -> Sequence[Booking]:
+        query = select(self.MODEL).filter(
+            self.MODEL.business_id == business_id,
+            self.MODEL.business.has(Business.owner_id == merchant.id),
+        )
+        return await self.fetch_all(query=query)

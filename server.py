@@ -1,8 +1,8 @@
 import uvicorn
 
 from beauty_be.app import create_app
-from beauty_be.conf import settings
 from beauty_be.conf.logging import LOG_CONFIG
+from beauty_be.conf.settings import settings
 
 app = create_app()
 

@@ -6,20 +6,30 @@ from sqlalchemy import and_
 from sqlalchemy import func
 from sqlalchemy import select
 
-from beauty_be.conf import settings
+from beauty_be.conf.settings import settings
 from beauty_be.schemas.working_hours import AvailableBookHourSchema
+from beauty_be.schemas.working_hours import WorkingHoursBaseSchema
 from beauty_be.services.base import BaseService
 from beauty_models.beauty_models.models import Booking
+from beauty_models.beauty_models.models import Business
+from beauty_models.beauty_models.models import Merchant
 from beauty_models.beauty_models.models import WorkingHours
 
 
 class WorkingHoursService(BaseService[WorkingHours]):
     MODEL = WorkingHours
 
-    async def get_working_hours(self, business_id: int, date: str) -> Sequence[WorkingHours]:
+    async def get_merchant_working_hours(self, business_id: int, merchant: Merchant) -> Sequence[WorkingHours]:
         query = select(self.MODEL).where(
             self.MODEL.business_id == business_id,
-            self.MODEL.date == datetime.strptime(date, settings.DEFAULT_DATE_FORMAT),
+            self.MODEL.business.has(Business.owner_id == merchant.id),
+        )
+        return await self.fetch_all(query=query)
+
+    async def get_working_hours(self, business_id: int, dates: list[datetime]) -> Sequence[WorkingHours]:
+        query = select(self.MODEL).where(
+            self.MODEL.business_id == business_id,
+            self.MODEL.date.in_(dates),
         )
         return await self.fetch_all(query=query)
 
@@ -29,7 +39,8 @@ class WorkingHoursService(BaseService[WorkingHours]):
         date: str,
         duration: int,
     ) -> list[AvailableBookHourSchema]:
-        working_hours = await self.get_working_hours(business_id, date)
+        formatted_date = datetime.strptime(date, settings.DEFAULT_DATE_FORMAT)
+        working_hours = await self.get_working_hours(business_id, [formatted_date])
         bookings = await self.fetch_all(
             query=(
                 select(Booking).where(
@@ -81,3 +92,24 @@ class WorkingHoursService(BaseService[WorkingHours]):
                 available_slots.append(AvailableBookHourSchema(time=current_time))
                 current_time += timedelta(seconds=settings.DEFAULT_BOOKING_TIME_STEP)
         return available_slots
+
+    async def create_working_hours(
+        self,
+        data: list[WorkingHoursBaseSchema],
+        business_id: int,
+    ) -> Sequence[WorkingHours]:
+        dates = [datetime.strptime(str(item.date), settings.DEFAULT_DATE_FORMAT) for item in data]
+        await self.bulk_delete(filters=(self.MODEL.date.in_(dates), self.MODEL.business_id == business_id))
+
+        objs = []
+        for item in data:
+            obj = self.MODEL(
+                date=item.date,
+                opening_time=item.opening_time,
+                closing_time=item.closing_time,
+                business_id=business_id,
+            )
+            await self.insert_obj(obj, commit=False)
+            objs.append(obj)
+        await self.session.commit()
+        return objs
