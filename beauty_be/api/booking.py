@@ -16,7 +16,7 @@ router = APIRouter()
 
 
 @router.post(
-    '/booking/business/{business_id}',
+    '/booking',
     summary='Make a booking',
     status_code=HTTPStatus.CREATED,
     response_model=BookingSchema,

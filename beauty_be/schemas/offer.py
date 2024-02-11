@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 
 class OfferSchema(BaseModel):
+    id: int
     name: str
     price: Decimal
     duration: int
