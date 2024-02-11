@@ -1,0 +1,3 @@
+[bandit]
+targets: beauty_be/
+exclude: test_*.py
