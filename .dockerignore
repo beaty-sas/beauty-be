@@ -17,7 +17,7 @@ coverage.xml
 .git
 .gitignore
 
-README.md
+
 .idea
 Dockerfile
 docker-compose.yml
