@@ -3,7 +3,7 @@ name: Build and Push Docker Image to ECR
 on:
   push:
     branches:
-      - main 
+      - main  # замените это на вашу основную ветку
 
 jobs:
   build-and-push:
@@ -11,21 +11,20 @@ jobs:
     
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
-      
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v3
-      with:
-        aws-access-key-id: AKIAYS2NRRVZGTWAVOVG
-        aws-secret-access-key: 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
-        aws-region: eu-central-1
+      uses: actions/checkout@v2
       
     - name: Login to Amazon ECR
       id: login-ecr
-      run: echo ${{ secrets.AWS_ACCESS_KEY_ID }} | docker login --username AWS --password-stdin 590183763314.dkr.ecr.eu-central-1.amazonaws.com
+      uses: aws-actions/amazon-ecr-login@v2
+      with:
+        registry: ${{ secrets.AWS_BACKEND_REGISTRY }}
+        region: eu-central-1
       
     - name: Build Docker image
-      run: docker build -t ${{ secrets.AWS_BACKEND_REGISTRY }}:latest .
+      run: docker build -t backend .
+      
+    - name: Tag Docker image
+      run: docker tag my-docker-image ${{ secrets.AWS_BACKEND_REGISTRY }}:latest
       
     - name: Push Docker image to Amazon ECR
       run: docker push ${{ secrets.AWS_BACKEND_REGISTRY }}:latest
