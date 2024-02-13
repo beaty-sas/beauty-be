@@ -3,15 +3,18 @@ name: Build and Push Docker Image to ECR
 on:
   push:
     branches:
-      - main  # замените это на вашу основную ветку
+      - main
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout repository
+    - name: Checkout code
       uses: actions/checkout@v2
+      with:
+        submodules: recursive
+        token: ${{ secrets.ACCESS_TOKEN_GITHUB }}
       
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
@@ -32,3 +35,21 @@ jobs:
       
     - name: Push Docker image to Amazon ECR
       run: docker push ${{ secrets.AWS_BACKEND_REGISTRY }}:latest
+
+#  update-service:
+#    needs: build-and-push
+#    runs-on: ubuntu-latest
+#    env:
+#      CLUSTER_NAME: ${{ secrets.AWS_ECS_CLUSTER }}
+#      SERVICE_NAME: ${{ secrets.AWS_ECS_SERVICE }}
+#      TASK_DEFINITION: ${{ secrets.AWS_ECS_TASK_DEFINITION }}
+#    steps:
+#      - name: Configure AWS credentials
+#        uses: aws-actions/configure-aws-credentials@v1
+#        with:
+#          aws-region: ${{ secrets.AWS_REGION }}
+#          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#      - name: Update ECS service
+#        run: |
+#          aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --task-definition $TASK_DEFINITION --force-new-deployment
