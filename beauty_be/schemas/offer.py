@@ -11,3 +11,10 @@ class OfferSchema(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class CreateOfferRequestSchema(BaseModel):
+    name: str
+    price: Decimal
+    duration: int
+    business_id: int

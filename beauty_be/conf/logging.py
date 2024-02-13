@@ -1,7 +1,7 @@
 from pythonjsonlogger import jsonlogger
 
-from beauty_be.conf import settings
 from beauty_be.conf.settings import Env
+from beauty_be.conf.settings import settings
 
 
 class BaseJsonFormatter(jsonlogger.JsonFormatter):

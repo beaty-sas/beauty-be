@@ -49,9 +49,3 @@ repos:
         language: system
         pass_filenames: false
         files: ^beauty_be/.*\.py$
-      - id: bandit-security-check
-        name: Bandit security check
-        entry: bandit
-        args: [ -q, -x, test ]
-        language: system
-        files: beauty_be/

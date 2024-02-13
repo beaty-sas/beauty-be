@@ -33,3 +33,10 @@ sessionmaker
 autouse
 func
 selectinload
+objs
+auth0
+jwk
+url
+aioboto3
+fileobj
+atta
