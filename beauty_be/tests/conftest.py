@@ -14,9 +14,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from beauty_be.app import create_app
-from beauty_be.conf import Settings
-from beauty_be.conf import settings
 from beauty_be.conf.db import async_session
+from beauty_be.conf.settings import Settings
+from beauty_be.conf.settings import settings
 from beauty_be.tests.factories import FACTORIES
 from beauty_models.beauty_models.models import metadata
 

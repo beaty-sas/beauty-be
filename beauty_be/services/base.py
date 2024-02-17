@@ -37,25 +37,32 @@ class BaseService(Generic[ModelT]):
         query = update(self.MODEL).where(*filters).values(**values).execution_options(synchronize_session='fetch')
         await self.session.execute(query)
 
-    async def update_obj(self, obj: ModelT, values: dict) -> ModelT:
+    async def update_obj(self, obj: ModelT, values: dict, commit: bool = True) -> ModelT:
         await self.update(filters=(self.MODEL.id == obj.id,), values=values)
         obj.__dict__.update(values)  # type: ignore
-        await self.session.commit()
+        if commit:
+            await self.session.commit()
         return obj
 
     async def insert(self, values: dict) -> Base:
         return await self.insert_obj(self.MODEL(**values))
 
-    async def insert_obj(self, obj: Base) -> Base:
+    async def insert_obj(self, obj: Base, commit: bool = True) -> Base:
         now = datetime.datetime.now(tz=None)
         if hasattr(self.MODEL, 'created_at'):
             obj.created = now
         if hasattr(self.MODEL, 'updated_at'):
             obj.updated = now
         self.session.add(obj)
-        await self.session.commit()
+        if commit:
+            await self.session.commit()
         return obj
 
     async def exist(self, filters: Sequence) -> bool:
         query = exists(self.MODEL).where(*filters).select()
         return await self.session.scalar(query)
+
+    async def bulk_delete(self, filters: Sequence) -> None:
+        query = self.MODEL.delete().where(*filters)
+        await self.session.execute(query)
+        await self.session.commit()

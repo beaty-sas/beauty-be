@@ -35,6 +35,11 @@ class Settings(BaseSettings):
     DEFAULT_DATE_FORMAT: str = '%Y-%m-%d'
     DEFAULT_BOOKING_TIME_STEP: int = 3600
 
+    AUTH0_URL: str = 'https://beauty.eu.auth0.com/'
+
+    S3_BUCKET_NAME: str = 'beauty-attachments'
+    AWS_DEFAULT_REGION: str = 'eu-central-1'
+
     @property
     def sqlalchemy_database_uri(self):
         return URL.create(
@@ -45,3 +50,6 @@ class Settings(BaseSettings):
             port=self.DB_PORT,
             database=self.DB_NAME,
         )
+
+
+settings = Settings()

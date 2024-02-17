@@ -1,8 +1,7 @@
-import json
 import multiprocessing
 
-from beauty_be.conf import settings
 from beauty_be.conf.logging import LOG_CONFIG
+from beauty_be.conf.settings import settings
 
 workers_per_core = 2
 cores = multiprocessing.cpu_count()
