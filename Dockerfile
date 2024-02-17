@@ -29,10 +29,4 @@ COPY beauty_models/ ./beauty_models
 RUN poetry config virtualenvs.create false \
     && poetry install --no-ansi --no-root --no-dev
 
-<<<<<<< HEAD
-FROM base as local
-
-COPY . .
-=======
 CMD ["bash", "docker-entrypoint.sh"]
->>>>>>> f109f26dcf0bac38f49e29851c5f1a58bf7de5c3
