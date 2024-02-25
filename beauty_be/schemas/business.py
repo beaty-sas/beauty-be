@@ -22,3 +22,4 @@ class UpdateBusinessSchema(BaseModel):
     display_name: str
     phone_number: str
     logo_id: int | None = None
+    location: LocationSchema

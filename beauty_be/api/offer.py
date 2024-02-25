@@ -26,7 +26,6 @@ router = APIRouter()
     responses={
         200: {'model': list[OfferSchema]},
     },
-    dependencies=[Depends(authenticate_merchant)],
 )
 async def get_merchant_offers(
     business_id: int = Query(..., description='Business id'),
@@ -46,7 +45,6 @@ async def get_merchant_offers(
     responses={
         201: {'model': OfferSchema},
     },
-    dependencies=[Depends(authenticate_merchant)],
 )
 async def create_offer(
     request_data: CreateOfferRequestSchema,
@@ -66,7 +64,6 @@ async def create_offer(
     responses={
         200: {'model': OfferSchema},
     },
-    dependencies=[Depends(authenticate_merchant)],
 )
 async def update_offer(
     offer_id: int,

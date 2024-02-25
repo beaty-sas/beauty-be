@@ -6,11 +6,13 @@ from fastapi import Depends
 
 from beauty_be.api.dependencies.auth import authenticate_merchant
 from beauty_be.api.dependencies.service import get_business_service
+from beauty_be.api.dependencies.service import get_location_service
 from beauty_be.api.dependencies.service import get_offer_service
 from beauty_be.schemas.business import BusinessSchema
 from beauty_be.schemas.business import UpdateBusinessSchema
 from beauty_be.schemas.offer import OfferSchema
 from beauty_be.services.business import BusinessService
+from beauty_be.services.location import LocationService
 from beauty_be.services.offer import OfferService
 from beauty_models.beauty_models.models import Business
 from beauty_models.beauty_models.models import Merchant
@@ -65,8 +67,11 @@ async def update_business_info(
     request_data: UpdateBusinessSchema,
     merchant: Merchant = Depends(authenticate_merchant),
     business_service: BusinessService = Depends(get_business_service),
+    location_service: LocationService = Depends(get_location_service),
 ) -> Business:
-    return await business_service.update_info(business_id, merchant, request_data)
+    business = await business_service.update_info(business_id, merchant, request_data)
+    await location_service.update_name(int(business.location_id), request_data.location.name)
+    return business
 
 
 @router.get(
