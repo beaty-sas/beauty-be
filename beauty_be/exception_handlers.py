@@ -47,7 +47,14 @@ async def already_exist_exception_handler(request: Request, exc: exceptions.Alre
     )
 
 
+async def auth_exception_handler(request: Request, exc: exceptions.AlreadyExistError) -> Response:
+    return await http_exception_handler(
+        request=request, exc=HTTPException(status_code=HTTPStatus.UNAUTHORIZED, detail=str(exc))
+    )
+
+
 def init_exception_handlers(app: FastAPI) -> None:
+    app.exception_handler(exceptions.AuthError)(auth_exception_handler)
     app.exception_handler(exceptions.ValidationError)(validation_exception_handler)
     app.exception_handler(exceptions.HTTPClientError)(http_client_exception_handler)
     app.exception_handler(exceptions.DoesNotExistError)(does_not_exist_exception_handler)
