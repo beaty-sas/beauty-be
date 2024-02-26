@@ -5,6 +5,7 @@ from typing import Sequence
 from typing import Type
 from typing import TypeVar
 
+from sqlalchemy import delete
 from sqlalchemy import exists
 from sqlalchemy import select
 from sqlalchemy import update
@@ -63,6 +64,6 @@ class BaseService(Generic[ModelT]):
         return await self.session.scalar(query)
 
     async def bulk_delete(self, filters: Sequence) -> None:
-        query = self.MODEL.delete().where(*filters)
+        query = delete(self.MODEL).where(*filters)
         await self.session.execute(query)
         await self.session.commit()

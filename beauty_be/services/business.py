@@ -51,3 +51,11 @@ class BusinessService(BaseService[Business]):
             return await self.get_info(business_id)
 
         raise AuthError(ErrorMessages.NOT_ENOUGH_PERMISSIONS)
+
+    async def create_business(self, merchant: Merchant) -> Business:
+        business = Business(
+            owner_id=merchant.id,
+            display_name=merchant.display_name,
+            logo_id=merchant.logo_id,
+        )
+        return await self.insert_obj(business)

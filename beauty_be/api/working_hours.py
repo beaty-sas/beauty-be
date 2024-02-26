@@ -11,6 +11,7 @@ from beauty_be.api.dependencies.service import get_working_hours_service
 from beauty_be.schemas.business import BusinessSchema
 from beauty_be.schemas.working_hours import AvailableBookHourSchema
 from beauty_be.schemas.working_hours import WorkingHoursBaseSchema
+from beauty_be.schemas.working_hours import WorkingHoursCreateSchema
 from beauty_be.services.business import BusinessService
 from beauty_be.services.working_hours import WorkingHoursService
 from beauty_models.beauty_models.models import Merchant
@@ -64,10 +65,10 @@ async def get_business_working_hours(
 )
 async def create_business_working_hours(
     business_id: int,
-    request_data: list[WorkingHoursBaseSchema],
+    request_data: list[WorkingHoursCreateSchema],
     merchant: Merchant = Depends(authenticate_merchant),
     business_service: BusinessService = Depends(get_business_service),
     working_hours_service: WorkingHoursService = Depends(get_working_hours_service),
 ) -> Sequence[WorkingHoursBaseSchema]:
-    await business_service.is_merchant_business(business_id, merchant)
+    await business_service.is_merchant_business(business_id, int(merchant.id))
     return await working_hours_service.create_working_hours(request_data, business_id)

@@ -8,7 +8,7 @@ from sqlalchemy import select
 
 from beauty_be.conf.settings import settings
 from beauty_be.schemas.working_hours import AvailableBookHourSchema
-from beauty_be.schemas.working_hours import WorkingHoursBaseSchema
+from beauty_be.schemas.working_hours import WorkingHoursCreateSchema
 from beauty_be.services.base import BaseService
 from beauty_models.beauty_models.models import Booking
 from beauty_models.beauty_models.models import Business
@@ -95,18 +95,17 @@ class WorkingHoursService(BaseService[WorkingHours]):
 
     async def create_working_hours(
         self,
-        data: list[WorkingHoursBaseSchema],
+        data: list[WorkingHoursCreateSchema],
         business_id: int,
     ) -> Sequence[WorkingHours]:
-        dates = [datetime.strptime(str(item.date), settings.DEFAULT_DATE_FORMAT) for item in data]
-        await self.bulk_delete(filters=(self.MODEL.date.in_(dates), self.MODEL.business_id == business_id))
-
         objs = []
         for item in data:
+            date_obj = datetime.strptime(item.date, '%Y-%m-%d').date()
+
             obj = self.MODEL(
-                date=item.date,
-                opening_time=item.opening_time,
-                closing_time=item.closing_time,
+                date=date_obj,
+                opening_time=item.opening_time.time(),
+                closing_time=item.closing_time.time(),
                 business_id=business_id,
             )
             await self.insert_obj(obj, commit=False)
