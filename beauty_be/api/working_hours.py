@@ -6,6 +6,7 @@ from fastapi import Depends
 from fastapi import Query
 
 from beauty_be.api.dependencies.auth import authenticate_merchant
+from beauty_be.api.dependencies.logger import LoggingRoute
 from beauty_be.api.dependencies.service import get_business_service
 from beauty_be.api.dependencies.service import get_working_hours_service
 from beauty_be.schemas.business import BusinessSchema
@@ -16,7 +17,7 @@ from beauty_be.services.business import BusinessService
 from beauty_be.services.working_hours import WorkingHoursService
 from beauty_models.beauty_models.models import Merchant
 
-router = APIRouter()
+router = APIRouter(route_class=LoggingRoute)
 
 
 @router.get(

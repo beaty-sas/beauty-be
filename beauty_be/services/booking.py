@@ -24,7 +24,7 @@ class BookingService(BaseService[Booking]):
     async def get_info(self, booking_id: int) -> Booking:
         if booking := await self.fetch_one(
             filters=(self.MODEL.id == booking_id,),
-            options=(selectinload(self.MODEL.business),),
+            options=(selectinload(self.MODEL.business), selectinload(self.MODEL.user)),
         ):
             return booking
         raise DoesNotExistError(ErrorMessages.OBJECT_NOT_FOUND.format(object_type=self.MODEL.__name__, id=booking_id))

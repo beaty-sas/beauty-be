@@ -1,3 +1,6 @@
+from typing import Sequence
+
+from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from beauty_be.conf.constants import ErrorMessages
@@ -59,3 +62,6 @@ class BusinessService(BaseService[Business]):
             logo_id=merchant.logo_id,
         )
         return await self.insert_obj(business)
+
+    async def get_businesses_ids(self) -> Sequence[int]:
+        return await self.fetch_all(query=select(self.MODEL.id))

@@ -5,6 +5,7 @@ from fastapi import APIRouter
 from fastapi import Depends
 
 from beauty_be.api.dependencies.auth import authenticate_merchant
+from beauty_be.api.dependencies.logger import LoggingRoute
 from beauty_be.api.dependencies.service import get_business_service
 from beauty_be.api.dependencies.service import get_location_service
 from beauty_be.api.dependencies.service import get_offer_service
@@ -18,7 +19,7 @@ from beauty_models.beauty_models.models import Business
 from beauty_models.beauty_models.models import Merchant
 from beauty_models.beauty_models.models import Offer
 
-router = APIRouter()
+router = APIRouter(route_class=LoggingRoute)
 
 
 @router.get(
@@ -35,6 +36,21 @@ async def get_my_business_info(
     business_service: BusinessService = Depends(get_business_service),
 ) -> Business:
     return await business_service.get_info_by_merchant(int(merchant.id))
+
+
+@router.get(
+    '/businesses/available',
+    summary='Get businesses ids',
+    status_code=HTTPStatus.OK,
+    response_model=list[int],
+    responses={
+        200: {'model': list[int]},
+    },
+)
+async def get_businesses_ids(
+    business_service: BusinessService = Depends(get_business_service),
+) -> Sequence[int]:
+    return await business_service.get_businesses_ids()
 
 
 @router.get(

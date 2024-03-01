@@ -6,6 +6,7 @@ from fastapi import Depends
 from fastapi import Query
 
 from beauty_be.api.dependencies.auth import authenticate_merchant
+from beauty_be.api.dependencies.logger import LoggingRoute
 from beauty_be.api.dependencies.service import get_business_service
 from beauty_be.api.dependencies.service import get_offer_service
 from beauty_be.schemas.offer import CreateOfferRequestSchema
@@ -15,7 +16,7 @@ from beauty_be.services.offer import OfferService
 from beauty_models.beauty_models.models import Merchant
 from beauty_models.beauty_models.models import Offer
 
-router = APIRouter()
+router = APIRouter(route_class=LoggingRoute)
 
 
 @router.get(
