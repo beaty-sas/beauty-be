@@ -76,7 +76,7 @@ async def update_booking(
 
 
 @router.get(
-    '/booking/business/{slug}',
+    '/booking/business/{business_id}',
     summary='Get all bookings for a business',
     status_code=HTTPStatus.OK,
     response_model=list[BookingSchema],
@@ -85,11 +85,11 @@ async def update_booking(
     },
 )
 async def get_bookings_for_business(
-    slug: str,
+    business_id: int,
     merchant: Merchant = Depends(authenticate_merchant),
     booking_service: BookingService = Depends(get_booking_service),
 ) -> Sequence[BookingSchema]:
-    return await booking_service.get_by_business_slug(slug, merchant)
+    return await booking_service.get_by_business(business_id, merchant)
 
 
 @router.patch(

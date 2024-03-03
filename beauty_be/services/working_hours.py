@@ -29,10 +29,13 @@ class WorkingHoursService(BaseService[WorkingHours]):
         return await self.fetch_all(query=query)
 
     async def get_working_hours(self, slug: str, date: datetime) -> Sequence[WorkingHours]:
+        start_of_day = datetime.combine(date, datetime.min.time())
+        end_of_day = start_of_day + timedelta(days=1) - timedelta(seconds=1)
+
         query = select(self.MODEL).where(
             self.MODEL.business.has(Business.slug == slug),
-            self.MODEL.date_from <= date,
-            self.MODEL.date_to >= date,
+            self.MODEL.date_from <= end_of_day,
+            self.MODEL.date_to >= start_of_day,
         )
         return await self.fetch_all(query=query)
 
@@ -73,7 +76,7 @@ class WorkingHoursService(BaseService[WorkingHours]):
         available_slots = []
         for hour in working_hours:
             current_time = hour.date_from
-            now = datetime.now()
+            now = datetime.now(tz=hour.date_from.tzinfo)
 
             while current_time <= hour.date_to:
                 slot_end_time = current_time + timedelta(seconds=duration)
@@ -93,7 +96,7 @@ class WorkingHoursService(BaseService[WorkingHours]):
                     current_time += timedelta(seconds=settings.DEFAULT_BOOKING_TIME_STEP)  # type: ignore
                     continue
 
-                available_slots.append(AvailableBookHourSchema(time=current_time))  # type: ignore
+                available_slots.append(AvailableBookHourSchema(time=current_time.strftime('%-H:%M')))  # type: ignore
                 current_time += timedelta(seconds=settings.DEFAULT_BOOKING_TIME_STEP)  # type: ignore
 
         return available_slots

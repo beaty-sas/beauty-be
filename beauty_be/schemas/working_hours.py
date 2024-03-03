@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 
 class AvailableBookHourSchema(BaseModel):
-    time: datetime
+    time: str
 
     class Config:
         from_attributes = True

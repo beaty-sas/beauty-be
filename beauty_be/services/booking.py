@@ -24,7 +24,11 @@ class BookingService(BaseService[Booking]):
     async def get_info(self, booking_id: int) -> Booking:
         if booking := await self.fetch_one(
             filters=(self.MODEL.id == booking_id,),
-            options=(selectinload(self.MODEL.business), selectinload(self.MODEL.user)),
+            options=(
+                selectinload(self.MODEL.business),
+                selectinload(self.MODEL.user),
+                selectinload(self.MODEL.offers),
+            ),
         ):
             return booking
         raise DoesNotExistError(ErrorMessages.OBJECT_NOT_FOUND.format(object_type=self.MODEL.__name__, id=booking_id))
@@ -45,11 +49,11 @@ class BookingService(BaseService[Booking]):
         obj = await self.insert_obj(booking)
         return await self.get_info(obj.id)
 
-    async def get_by_business_slug(self, slug: str, merchant: Merchant) -> Sequence[Booking]:
+    async def get_by_business(self, business_id: int, merchant: Merchant) -> Sequence[Booking]:
         query = (
             select(self.MODEL)
             .filter(
-                self.MODEL.business.has(Business.slug == slug),
+                self.MODEL.business_id == business_id,
                 self.MODEL.business.has(Business.owner_id == merchant.id),
             )
             .options(
