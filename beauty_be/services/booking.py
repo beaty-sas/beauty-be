@@ -38,16 +38,18 @@ class BookingService(BaseService[Booking]):
             business_id=data.business_id,
             user_id=user.id,
             price=sum(offer.price for offer in offers),
+            comment=data.comment,
+            attachments=data.attachments,
         )
         booking.offers.extend(offers)
         obj = await self.insert_obj(booking)
         return await self.get_info(obj.id)
 
-    async def get_by_business_id(self, business_id: int, merchant: Merchant) -> Sequence[Booking]:
+    async def get_by_business_slug(self, slug: str, merchant: Merchant) -> Sequence[Booking]:
         query = (
             select(self.MODEL)
             .filter(
-                self.MODEL.business_id == business_id,
+                self.MODEL.business.has(Business.slug == slug),
                 self.MODEL.business.has(Business.owner_id == merchant.id),
             )
             .options(
@@ -63,6 +65,14 @@ class BookingService(BaseService[Booking]):
             values={'status': BookingStatus.CANCELLED},
         )
         await self.session.commit()
+
+    async def confirm_booking(self, booking_id: int, merchant: Merchant) -> Booking:
+        await self.update(
+            filters=(self.MODEL.id == booking_id, self.MODEL.business.has(Business.owner_id == merchant.id)),
+            values={'status': BookingStatus.CONFIRMED},
+        )
+        await self.session.commit()
+        return await self.get_info(booking_id)
 
     async def get_info_by_merchant(self, booking_id: int, merchant: Merchant) -> Booking:
         if booking := await self.fetch_one(

@@ -42,19 +42,19 @@ async def get_my_business_info(
     '/businesses/available',
     summary='Get businesses ids',
     status_code=HTTPStatus.OK,
-    response_model=list[int],
+    response_model=list[str],
     responses={
-        200: {'model': list[int]},
+        200: {'model': list[str]},
     },
 )
-async def get_businesses_ids(
+async def get_businesses_slug(
     business_service: BusinessService = Depends(get_business_service),
-) -> Sequence[int]:
-    return await business_service.get_businesses_ids()
+) -> Sequence[str]:
+    return await business_service.get_businesses_slug()
 
 
 @router.get(
-    '/businesses/{business_id}',
+    '/businesses/{slug}',
     summary='Get business info',
     status_code=HTTPStatus.OK,
     response_model=BusinessSchema,
@@ -63,10 +63,10 @@ async def get_businesses_ids(
     },
 )
 async def get_business_info(
-    business_id: int,
+    slug: str,
     business_service: BusinessService = Depends(get_business_service),
 ) -> Business:
-    return await business_service.get_info(business_id)
+    return await business_service.get_info(slug)
 
 
 @router.patch(
@@ -86,12 +86,12 @@ async def update_business_info(
     location_service: LocationService = Depends(get_location_service),
 ) -> Business:
     business = await business_service.update_info(business_id, merchant, request_data)
-    await location_service.update_name(int(business.location_id), request_data.location.name)
+    await location_service.update_or_create_name(business, request_data.location.name)
     return business
 
 
 @router.get(
-    '/businesses/{business_id}/offers',
+    '/businesses/{slug}/offers',
     summary='Get business offers',
     status_code=HTTPStatus.OK,
     response_model=list[OfferSchema],
@@ -100,7 +100,7 @@ async def update_business_info(
     },
 )
 async def get_business_offers(
-    business_id: int,
+    slug: str,
     offer_service: OfferService = Depends(get_offer_service),
 ) -> Sequence[Offer]:
-    return await offer_service.get_by_business_id(business_id)
+    return await offer_service.get_by_business_slug(slug)

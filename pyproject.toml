@@ -23,6 +23,7 @@ gunicorn = "^21.2.0"
 pyjwt = "^2.8.0"
 aioboto3 = "^12.3.0"
 cryptography = "^42.0.5"
+python-slugify = "^8.0.4"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.1.1"

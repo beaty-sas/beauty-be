@@ -26,6 +26,8 @@ class BookingCreateSchema(BaseModel):
     business_id: int
     offers: list[int]
     user: UserSchema
+    comment: str = ''
+    attachments: list[int] = []
 
 
 class BookingUpdateSchema(BaseModel):

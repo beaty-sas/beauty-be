@@ -11,6 +11,7 @@ from beauty_be.schemas.working_hours import AvailableBookHourSchema
 from beauty_be.schemas.working_hours import WorkingHoursCreateSchema
 from beauty_be.services.base import BaseService
 from beauty_models.beauty_models.models import Booking
+from beauty_models.beauty_models.models import BookingStatus
 from beauty_models.beauty_models.models import Business
 from beauty_models.beauty_models.models import Merchant
 from beauty_models.beauty_models.models import WorkingHours
@@ -23,29 +24,32 @@ class WorkingHoursService(BaseService[WorkingHours]):
         query = select(self.MODEL).where(
             self.MODEL.business_id == business_id,
             self.MODEL.business.has(Business.owner_id == merchant.id),
+            self.MODEL.date_from >= datetime.now().date(),
         )
         return await self.fetch_all(query=query)
 
-    async def get_working_hours(self, business_id: int, dates: list[datetime]) -> Sequence[WorkingHours]:
+    async def get_working_hours(self, slug: str, date: datetime) -> Sequence[WorkingHours]:
         query = select(self.MODEL).where(
-            self.MODEL.business_id == business_id,
-            self.MODEL.date.in_(dates),
+            self.MODEL.business.has(Business.slug == slug),
+            self.MODEL.date_from <= date,
+            self.MODEL.date_to >= date,
         )
         return await self.fetch_all(query=query)
 
     async def get_available_hours(
         self,
-        business_id: int,
+        slug: str,
         date: str,
         duration: int,
     ) -> list[AvailableBookHourSchema]:
         formatted_date = datetime.strptime(date, settings.DEFAULT_DATE_FORMAT)
-        working_hours = await self.get_working_hours(business_id, [formatted_date])
+        working_hours = await self.get_working_hours(slug, formatted_date)
         bookings = await self.fetch_all(
             query=(
                 select(Booking).where(
                     and_(
-                        Booking.business_id == business_id,
+                        Booking.business.has(Business.slug == slug),
+                        Booking.status != BookingStatus.CANCELLED,
                         func.date(Booking.start_time) == datetime.strptime(date, settings.DEFAULT_DATE_FORMAT),
                     )
                 )
@@ -68,29 +72,30 @@ class WorkingHoursService(BaseService[WorkingHours]):
 
         available_slots = []
         for hour in working_hours:
-            current_time = datetime.combine(hour.date, hour.opening_time)  # type: ignore
-            end_time = datetime.combine(hour.date, hour.closing_time)  # type: ignore
-            while current_time <= end_time:
+            current_time = hour.date_from
+            now = datetime.now()
+
+            while current_time <= hour.date_to:
                 slot_end_time = current_time + timedelta(seconds=duration)
 
-                if slot_end_time > end_time:
-                    current_time += timedelta(seconds=settings.DEFAULT_BOOKING_TIME_STEP)
+                if current_time < now:
+                    current_time += timedelta(seconds=settings.DEFAULT_BOOKING_TIME_STEP)  # type: ignore
                     continue
 
-                if current_time + timedelta(seconds=duration) > end_time:
-                    current_time += timedelta(seconds=settings.DEFAULT_BOOKING_TIME_STEP)
+                if slot_end_time > hour.date_to or (current_time + timedelta(seconds=duration)) > hour.date_to:
+                    current_time += timedelta(seconds=settings.DEFAULT_BOOKING_TIME_STEP)  # type: ignore
                     continue
 
-                if current_time.hour in booked_slots:
-                    current_time += timedelta(seconds=settings.DEFAULT_BOOKING_TIME_STEP)
+                if (
+                    hour.date_from.hour in booked_slots
+                    or (current_time + timedelta(seconds=duration)).hour in booked_slots
+                ):
+                    current_time += timedelta(seconds=settings.DEFAULT_BOOKING_TIME_STEP)  # type: ignore
                     continue
 
-                if (current_time + timedelta(seconds=duration)).hour in booked_slots:
-                    current_time += timedelta(seconds=settings.DEFAULT_BOOKING_TIME_STEP)
-                    continue
+                available_slots.append(AvailableBookHourSchema(time=current_time))  # type: ignore
+                current_time += timedelta(seconds=settings.DEFAULT_BOOKING_TIME_STEP)  # type: ignore
 
-                available_slots.append(AvailableBookHourSchema(time=current_time))
-                current_time += timedelta(seconds=settings.DEFAULT_BOOKING_TIME_STEP)
         return available_slots
 
     async def create_working_hours(
@@ -100,15 +105,16 @@ class WorkingHoursService(BaseService[WorkingHours]):
     ) -> Sequence[WorkingHours]:
         objs = []
         for item in data:
-            date_obj = datetime.strptime(item.date, '%Y-%m-%d').date()
-
             obj = self.MODEL(
-                date=date_obj,
-                opening_time=item.opening_time.time(),
-                closing_time=item.closing_time.time(),
+                date_from=item.date_from,
+                date_to=item.date_to,
                 business_id=business_id,
             )
             await self.insert_obj(obj, commit=False)
             objs.append(obj)
         await self.session.commit()
         return objs
+
+    async def delete_working_hour(self, working_hours_id: int) -> None:
+        await self.bulk_delete(filters=(self.MODEL.id == working_hours_id,))
+        await self.session.commit()
