@@ -39,7 +39,7 @@ jobs:
         docker tag api ${{ secrets.AWS_API_REGISTRY }}
         docker push ${{ secrets.AWS_API_REGISTRY }}
 
-update-service-stage:
+  update-service-stage:
     needs: build-and-push
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.runUpdateService == 'true' }}
@@ -54,7 +54,7 @@ update-service-stage:
       run: |
         aws ecs update-service --cluster ${{ secrets.AWS_ECS_CLUSTER_STAGE }} --service ${{ secrets.AWS_ECS_SERVICE }} --task-definition ${{ secrets.AWS_ECS_TASK_DEFINITION_STAGE }} --force-new-deployment
 
-update-service-prod:
+  update-service-prod:
     needs: build-and-push
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.runUpdateService == 'true' }}
