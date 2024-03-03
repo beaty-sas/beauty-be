@@ -16,15 +16,17 @@ from beauty_be.exception_handlers import init_exception_handlers
 from beauty_be.middlewares import init_middlewares
 from beauty_models.beauty_models.models import metadata
 
+PREFIX = '/api'
+
 
 def init_routes(app: 'FastAPI') -> None:
-    app.include_router(base.router, tags=['Base'])
-    app.include_router(offer.router, tags=['Offer'])
-    app.include_router(booking.router, tags=['Booking'])
-    app.include_router(business.router, tags=['Business'])
-    app.include_router(merchant.router, tags=['Merchant'])
-    app.include_router(attachments.router, tags=['Attachment'])
-    app.include_router(working_hours.router, tags=['Working Hours'])
+    app.include_router(base.router, tags=['Base'], prefix=PREFIX)
+    app.include_router(offer.router, tags=['Offer'], prefix=PREFIX)
+    app.include_router(booking.router, tags=['Booking'], prefix=PREFIX)
+    app.include_router(business.router, tags=['Business'], prefix=PREFIX)
+    app.include_router(merchant.router, tags=['Merchant'], prefix=PREFIX)
+    app.include_router(attachments.router, tags=['Attachment'], prefix=PREFIX)
+    app.include_router(working_hours.router, tags=['Working Hours'], prefix=PREFIX)
 
 
 def init_db(app_settings: Settings):
@@ -39,8 +41,8 @@ def create_app(app_settings: Settings | None = None) -> FastAPI:
     app = FastAPI(
         title='Beauty API',
         debug=app_settings.DEBUG,
-        docs_url='/docs',
-        redoc_url='/redoc',
+        docs_url='/api/docs',
+        redoc_url='/api/redoc',
         version=__version__,
     )
     init_middlewares(app, app_settings)

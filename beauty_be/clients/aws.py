@@ -12,11 +12,18 @@ class AWSClient:
         IMAGE: str = '{env}/attachments/{uuid}.{type}'
 
     def __init__(self):
-        self.session = aioboto3.Session()
+        self.session = aioboto3.Session(
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+        )
         self.bucket_name = settings.S3_BUCKET_NAME
 
     async def save_image(self, file: UploadFile) -> AnyHttpUrl:
-        async with self.session.client('s3') as s3:
+        async with self.session.client(
+            's3',
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+        ) as s3:
             s3_route = self.ROUTES.IMAGE.format(
                 env=settings.ENV,
                 uuid=str(uuid.uuid4()),

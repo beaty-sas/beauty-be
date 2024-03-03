@@ -8,8 +8,10 @@ from sqlalchemy.orm import selectinload
 from beauty_be.conf.constants import ErrorMessages
 from beauty_be.exceptions import DoesNotExistError
 from beauty_be.schemas.booking import BookingCreateSchema
+from beauty_be.schemas.booking import BookingUpdateSchema
 from beauty_be.services.base import BaseService
 from beauty_models.beauty_models.models import Booking
+from beauty_models.beauty_models.models import BookingStatus
 from beauty_models.beauty_models.models import Business
 from beauty_models.beauty_models.models import Merchant
 from beauty_models.beauty_models.models import Offer
@@ -22,7 +24,11 @@ class BookingService(BaseService[Booking]):
     async def get_info(self, booking_id: int) -> Booking:
         if booking := await self.fetch_one(
             filters=(self.MODEL.id == booking_id,),
-            options=(selectinload(self.MODEL.business),),
+            options=(
+                selectinload(self.MODEL.business),
+                selectinload(self.MODEL.user),
+                selectinload(self.MODEL.offers),
+            ),
         ):
             return booking
         raise DoesNotExistError(ErrorMessages.OBJECT_NOT_FOUND.format(object_type=self.MODEL.__name__, id=booking_id))
@@ -36,14 +42,54 @@ class BookingService(BaseService[Booking]):
             business_id=data.business_id,
             user_id=user.id,
             price=sum(offer.price for offer in offers),
+            comment=data.comment,
+            attachments=data.attachments,
         )
         booking.offers.extend(offers)
         obj = await self.insert_obj(booking)
         return await self.get_info(obj.id)
 
-    async def get_by_business_id(self, business_id: int, merchant: Merchant) -> Sequence[Booking]:
-        query = select(self.MODEL).filter(
-            self.MODEL.business_id == business_id,
-            self.MODEL.business.has(Business.owner_id == merchant.id),
+    async def get_by_business(self, business_id: int, merchant: Merchant) -> Sequence[Booking]:
+        query = (
+            select(self.MODEL)
+            .filter(
+                self.MODEL.business_id == business_id,
+                self.MODEL.business.has(Business.owner_id == merchant.id),
+            )
+            .options(
+                selectinload(self.MODEL.offers),
+                selectinload(self.MODEL.user),
+            )
         )
         return await self.fetch_all(query=query)
+
+    async def cancel_booking(self, booking_id: int, merchant: Merchant) -> None:
+        await self.update(
+            filters=(self.MODEL.id == booking_id, self.MODEL.business.has(Business.owner_id == merchant.id)),
+            values={'status': BookingStatus.CANCELLED},
+        )
+        await self.session.commit()
+
+    async def confirm_booking(self, booking_id: int, merchant: Merchant) -> Booking:
+        await self.update(
+            filters=(self.MODEL.id == booking_id, self.MODEL.business.has(Business.owner_id == merchant.id)),
+            values={'status': BookingStatus.CONFIRMED},
+        )
+        await self.session.commit()
+        return await self.get_info(booking_id)
+
+    async def get_info_by_merchant(self, booking_id: int, merchant: Merchant) -> Booking:
+        if booking := await self.fetch_one(
+            filters=(self.MODEL.id == booking_id, self.MODEL.business.has(Business.owner_id == merchant.id)),
+            options=(selectinload(self.MODEL.offers), selectinload(self.MODEL.user)),
+        ):
+            return booking
+        raise DoesNotExistError(ErrorMessages.OBJECT_NOT_FOUND.format(object_type=self.MODEL.__name__, id=booking_id))
+
+    async def update_booking(self, booking_id: int, merchant: Merchant, data: BookingUpdateSchema) -> Booking:
+        await self.update(
+            filters=(self.MODEL.id == booking_id, self.MODEL.business.has(Business.owner_id == merchant.id)),
+            values=data.dict(),
+        )
+        await self.session.commit()
+        return await self.get_info_by_merchant(booking_id, merchant)

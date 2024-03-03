@@ -29,16 +29,18 @@ class Settings(BaseSettings):
     DB_PASS: str = 'postgres'
     DB_HOST: str = 'localhost'
     DB_PORT: int = 5432
-    DB_NAME: str = 'beauty_1'
+    DB_NAME: str = 'postgres'
     DB_DRIVER: str = 'postgresql+asyncpg'
 
     DEFAULT_DATE_FORMAT: str = '%Y-%m-%d'
     DEFAULT_BOOKING_TIME_STEP: int = 3600
 
-    AUTH0_URL: str = 'https://beauty.eu.auth0.com/'
+    AUTH0_URL: str = 'https://reserve-exp.eu.auth0.com'
 
-    S3_BUCKET_NAME: str = 'beauty-attachments'
+    S3_BUCKET_NAME: str = 'reserve-attachemtns'
     AWS_DEFAULT_REGION: str = 'eu-central-1'
+    AWS_ACCESS_KEY_ID: str = ''
+    AWS_SECRET_ACCESS_KEY: str = ''
 
     @property
     def sqlalchemy_database_uri(self):

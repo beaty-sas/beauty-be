@@ -2,6 +2,7 @@ from pydantic import BaseModel
 
 
 class AttachmentSchema(BaseModel):
+    id: int
     original: str
     thumbnail: str
 

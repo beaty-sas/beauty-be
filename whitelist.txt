@@ -40,3 +40,4 @@ url
 aioboto3
 fileobj
 atta
+slugify

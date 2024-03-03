@@ -7,12 +7,14 @@ from fastapi import Request
 from fastapi.security import HTTPAuthorizationCredentials
 from fastapi.security import HTTPBearer
 
+from beauty_be.api.dependencies.service import get_business_service
 from beauty_be.api.dependencies.service import get_merchant_service
 from beauty_be.conf.constants import ErrorMessages
 from beauty_be.conf.constants import JWK_URL
 from beauty_be.conf.constants import JWT_ACCESS_TOKEN_ALGORITHMS
 from beauty_be.conf.settings import settings
 from beauty_be.exceptions import AuthError
+from beauty_be.services.business import BusinessService
 from beauty_be.services.merchant import MerchantService
 from beauty_models.beauty_models.models import Merchant
 
@@ -58,6 +60,7 @@ async def authenticate_merchant(
     request: Request,
     token: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
     merchant_service: MerchantService = Depends(get_merchant_service),
+    business_service: BusinessService = Depends(get_business_service),
 ) -> Merchant:
     if not token:
         raise AuthError(ErrorMessages.NOT_AUTH)
@@ -67,6 +70,7 @@ async def authenticate_merchant(
 
     if not merchant:
         merchant = await merchant_service.create(token.credentials, token_data['sub'])
+        await business_service.create_business(merchant)
 
     request.state.merchant = merchant
     return merchant

@@ -4,16 +4,21 @@ from pydantic import BaseModel
 
 
 class AvailableBookHourSchema(BaseModel):
-    time: datetime
+    time: str
 
     class Config:
         from_attributes = True
 
 
 class WorkingHoursBaseSchema(BaseModel):
-    date: datetime
-    opening_time: datetime
-    closing_time: datetime
+    id: int
+    date_from: datetime
+    date_to: datetime
 
     class Config:
         from_attributes = True
+
+
+class WorkingHoursCreateSchema(BaseModel):
+    date_from: datetime
+    date_to: datetime
