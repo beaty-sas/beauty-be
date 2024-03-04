@@ -1,4 +1,4 @@
-name: Build, Push and Optionally Update ECS Service
+name: Build, Push
 
 on:
   push:
@@ -32,53 +32,6 @@ jobs:
         docker build -t api .
         docker tag api ${{ secrets.AWS_API_REGISTRY }}
         docker push ${{ secrets.AWS_API_REGISTRY }}
-
-  update-service-stage:
-    needs: [build-and-push]
-    runs-on: ubuntu-latest
-    steps:
-    - name: Manual Workflow Approval
-      uses: trstringer/manual-approval@v1.9.0
-      with:
-        secret: ${{ github.ACCESS_TOKEN_GITHUB }}
-        approvers: beaty-sas
-        minimum-approvals: 1
-        issue-title: "Deploying v1.3.5 to prod from staging"
-        issue-body: "Please approve or deny the deployment of version v1.3.5."
-        exclude-workflow-initiator-as-approver: false
-        additional-approved-words: ''
-        additional-denied-words: ''
-
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-    
-    - name: Update ECS service
-      run: |
-        aws ecs update-service --cluster ${{ secrets.AWS_ECS_CLUSTER_STAGE }} --service ${{ secrets.AWS_ECS_SERVICE }} --task-definition ${{ secrets.AWS_ECS_TASK_DEFINITION_STAGE }} --force-new-deployment
-
-
-  update-service-prod:
-    needs: [build-and-push]
-    runs-on: ubuntu-latest
-    steps:
-    - name: Manual Workflow Approval
-      uses: trstringer/manual-approval@v1.9.0
-
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-    - name: Update ECS service
-      run: |
-        aws ecs update-service --cluster ${{ secrets.AWS_ECS_CLUSTER_PROD }} --service ${{ secrets.AWS_ECS_SERVICE }} --task-definition ${{ secrets.AWS_ECS_TASK_DEFINITION_PROD }} --force-new-deployment
-
 
 
 
