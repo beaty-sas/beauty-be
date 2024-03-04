@@ -1,13 +1,10 @@
-name: Build, Push and Optionally Update ECS Service
+name: Update ECS prod
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
    update-service-prod:
-    needs: [build-and-push]
     runs-on: ubuntu-latest
     steps:
 

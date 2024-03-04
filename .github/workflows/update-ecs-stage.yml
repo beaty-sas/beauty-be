@@ -1,13 +1,10 @@
-name: Build, Push
+name: Update ECS Stage
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   update-service-stage:
-    needs: [build-and-push]
     runs-on: ubuntu-latest
     steps:
 
