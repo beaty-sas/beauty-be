@@ -1,4 +1,4 @@
-name: Build and Push Docker Image to ECR
+name: Build, Push
 
 on:
   push:
@@ -27,48 +27,28 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v2
       
-    - name: Build Docker image
-      run: docker build -t backend .
-      
-    - name: Tag Docker image
-      run: docker tag backend ${{ secrets.AWS_BACKEND_REGISTRY }}:latest
-      
-    - name: Push Docker image to Amazon ECR
-      run: docker push ${{ secrets.AWS_BACKEND_REGISTRY }}:latest
-
-#  update-service:
-#    needs: build-and-push
-#    runs-on: ubuntu-latest
-#    env:
-#      CLUSTER_NAME: ${{ secrets.AWS_ECS_CLUSTER }}
-#      SERVICE_NAME: ${{ secrets.AWS_ECS_SERVICE }}
-#      TASK_DEFINITION: ${{ secrets.AWS_ECS_TASK_DEFINITION }}
-#    steps:
-#      - name: Configure AWS credentials
-#        uses: aws-actions/configure-aws-credentials@v1
-#        with:
-#          aws-region: ${{ secrets.AWS_REGION }}
-#          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#      - name: Update ECS service
-#        run: |
-#          aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --task-definition $TASK_DEFINITION --force-new-deployment
-
-
-  deploy-to-ec2:
-    runs-on: ubuntu-latest
-    needs: build-and-push 
-    steps:
-    - name: Installing SSH key
-      uses: webfactory/ssh-agent@v0.5.3
-      with:
-        ssh-private-key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-
-    - name: Connect to EC2 and deploy
+    - name: Build, Tag and Push Docker image
       run: |
-        ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} "
-          aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin 590183763314.dkr.ecr.eu-central-1.amazonaws.com
-          cd docker-compose 
-          docker-compose down
-          docker-compose up -d
-        "
+        docker build -t api .
+        docker tag api ${{ secrets.AWS_API_REGISTRY }}
+        docker push ${{ secrets.AWS_API_REGISTRY }}
+
+
+
+  # deploy-to-ec2:
+  #   runs-on: ubuntu-latest
+  #   needs: build-and-push 
+  #   steps:
+  #   - name: Installing SSH key
+  #     uses: webfactory/ssh-agent@v0.5.3
+  #     with:
+  #       ssh-private-key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+
+  #   - name: Connect to EC2 and deploy
+  #     run: |
+  #       ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} "
+  #         aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin 590183763314.dkr.ecr.eu-central-1.amazonaws.com
+  #         cd docker-compose 
+  #         docker-compose down
+  #         docker-compose up -d
+  #       "

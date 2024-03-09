@@ -1,0 +1,20 @@
+name: Update ECS Stage
+
+on:
+  workflow_dispatch:
+
+jobs:
+  update-service-stage:
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    
+    - name: Update ECS service
+      run: |
+        aws ecs update-service --cluster ${{ secrets.AWS_ECS_CLUSTER_STAGE }} --service ${{ secrets.AWS_ECS_SERVICE }} --task-definition ${{ secrets.AWS_ECS_TASK_DEFINITION_STAGE }} --force-new-deployment
