@@ -1,4 +1,7 @@
+from typing import Sequence
+
 from fastapi import UploadFile
+from sqlalchemy import select
 
 from beauty_be.clients import aws_client
 from beauty_be.services.base import BaseService
@@ -12,3 +15,7 @@ class AttachmentService(BaseService[Attachment]):
         image_url = await aws_client.save_image(file)
         obj = self.MODEL(original=str(image_url), thumbnail=str(image_url))
         return await self.insert_obj(obj)
+
+    async def get_by_ids(self, ids: list[int]) -> Sequence[Attachment]:
+        query = select(self.MODEL).where(self.MODEL.id.in_(ids))
+        return await self.fetch_all(query=query)

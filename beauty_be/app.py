@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from beauty_be import __version__
+from beauty_be.api import analytic
 from beauty_be.api import attachments
 from beauty_be.api import base
 from beauty_be.api import booking
@@ -25,6 +26,7 @@ def init_routes(app: 'FastAPI') -> None:
     app.include_router(booking.router, tags=['Booking'], prefix=PREFIX)
     app.include_router(business.router, tags=['Business'], prefix=PREFIX)
     app.include_router(merchant.router, tags=['Merchant'], prefix=PREFIX)
+    app.include_router(analytic.router, tags=['Analytic'], prefix=PREFIX)
     app.include_router(attachments.router, tags=['Attachment'], prefix=PREFIX)
     app.include_router(working_hours.router, tags=['Working Hours'], prefix=PREFIX)
 

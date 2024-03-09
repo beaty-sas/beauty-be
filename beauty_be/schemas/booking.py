@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from pydantic import BaseModel
 
+from beauty_be.schemas.attachment import AttachmentSchema
 from beauty_be.schemas.offer import OfferSchema
 from beauty_be.schemas.user import UserSchema
 from beauty_models.beauty_models.models import BookingStatus
@@ -16,6 +17,8 @@ class BookingSchema(BaseModel):
     user: UserSchema
     price: Decimal
     status: BookingStatus
+    attachments: list[AttachmentSchema]
+    comment: str
 
     class Config:
         from_attributes = True

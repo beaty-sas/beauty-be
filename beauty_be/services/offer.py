@@ -42,11 +42,23 @@ class OfferService(BaseService[Offer]):
         if exist_offer:
             updated_offer = await self.update_obj(
                 exist_offer,
-                values={'deleted_at': None, 'price': data.price, 'duration': data.duration},
+                values={
+                    'deleted_at': None,
+                    'price': data.price,
+                    'duration': data.duration,
+                    'allow_photo': data.allow_photo,
+                },
             )
             return updated_offer
 
-        offer = await self.insert(values={'name': data.name, 'price': data.price, 'duration': data.duration})
+        offer = await self.insert(
+            values={
+                'name': data.name,
+                'price': data.price,
+                'duration': data.duration,
+                'allow_photo': data.allow_photo,
+            }
+        )
         query = insert(business_offers).values(business_id=data.business_id, offer_id=offer.id)
         await self.session.execute(query)
         await self.session.commit()
@@ -58,6 +70,7 @@ class OfferService(BaseService[Offer]):
                 'name': data.name,
                 'price': data.price,
                 'duration': data.duration,
+                'allow_photo': data.allow_photo,
             }
             return await self.update_obj(obj=offer, values=values)
 

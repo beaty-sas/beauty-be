@@ -31,6 +31,9 @@ class BaseService(Generic[ModelT]):
     async def fetch_all(self, query: Query | Select) -> Sequence[ModelT]:
         return (await self.session.scalars(query)).all()
 
+    async def fetch_count(self, query: Query | Select) -> int:
+        return await self.session.scalar(query)
+
     async def update(self, filters: Sequence, values: dict) -> None:
         now = datetime.datetime.now(tz=None)
         if hasattr(self.MODEL, 'updated_at'):

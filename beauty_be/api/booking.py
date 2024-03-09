@@ -6,12 +6,14 @@ from fastapi import Depends
 
 from beauty_be.api.dependencies.auth import authenticate_merchant
 from beauty_be.api.dependencies.logger import LoggingRoute
+from beauty_be.api.dependencies.service import get_attachment_service
 from beauty_be.api.dependencies.service import get_booking_service
 from beauty_be.api.dependencies.service import get_offer_service
 from beauty_be.api.dependencies.service import get_user_service
 from beauty_be.schemas.booking import BookingCreateSchema
 from beauty_be.schemas.booking import BookingSchema
 from beauty_be.schemas.booking import BookingUpdateSchema
+from beauty_be.services.attachment_service import AttachmentService
 from beauty_be.services.booking import BookingService
 from beauty_be.services.offer import OfferService
 from beauty_be.services.user import UserService
@@ -35,10 +37,12 @@ async def make_new_booking(
     user_service: UserService = Depends(get_user_service),
     offer_service: OfferService = Depends(get_offer_service),
     booking_service: BookingService = Depends(get_booking_service),
+    attachment_service: AttachmentService = Depends(get_attachment_service),
 ) -> BookingSchema:
     user = await user_service.get_or_create_by_phone_number(request_data.user)
     offers = await offer_service.get_by_ids(request_data.offers)
-    return await booking_service.create_booking(request_data, offers, user)
+    attachments = await attachment_service.get_by_ids(request_data.attachments)
+    return await booking_service.create_booking(request_data, offers, attachments, user)
 
 
 @router.get(
