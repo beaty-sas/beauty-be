@@ -36,3 +36,4 @@ class BookingCreateSchema(BaseModel):
 class BookingUpdateSchema(BaseModel):
     start_time: datetime
     end_time: datetime
+    comment: str

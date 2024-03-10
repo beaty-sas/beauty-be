@@ -32,6 +32,7 @@ class BookingService(BaseService[Booking]):
                 selectinload(self.MODEL.business),
                 selectinload(self.MODEL.user),
                 selectinload(self.MODEL.offers),
+                selectinload(self.MODEL.attachments),
             ),
         ):
             return booking
@@ -92,7 +93,11 @@ class BookingService(BaseService[Booking]):
     async def get_info_by_merchant(self, booking_id: int, merchant: Merchant) -> Booking:
         if booking := await self.fetch_one(
             filters=(self.MODEL.id == booking_id, self.MODEL.business.has(Business.owner_id == merchant.id)),
-            options=(selectinload(self.MODEL.offers), selectinload(self.MODEL.user)),
+            options=(
+                selectinload(self.MODEL.offers),
+                selectinload(self.MODEL.user),
+                selectinload(self.MODEL.attachments),
+            ),
         ):
             return booking
         raise DoesNotExistError(ErrorMessages.OBJECT_NOT_FOUND.format(object_type=self.MODEL.__name__, id=booking_id))
