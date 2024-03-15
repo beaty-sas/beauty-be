@@ -12,7 +12,7 @@ router = APIRouter()
 
 
 @router.post(
-    '/attachments',
+    '/attachments/',
     summary='Upload attachments',
     status_code=HTTPStatus.CREATED,
     response_model=AttachmentSchema,
