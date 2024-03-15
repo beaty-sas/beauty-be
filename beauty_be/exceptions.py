@@ -25,14 +25,6 @@ class HTTPClientError(Exception):
         return f'<{self.__class__.__name__} status_code={self.status_code}>'
 
 
-class BaseServiceError(Exception):
-    def __init__(self, detail: str):
-        self.detail = detail
-
-    def __str__(self):
-        return self.detail
-
-
 class ValidationError(Exception):
     pass
 
@@ -42,4 +34,8 @@ class DoesNotExistError(Exception):
 
 
 class AlreadyExistError(Exception):
+    pass
+
+
+class AWSClientError(Exception):
     pass

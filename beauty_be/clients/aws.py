@@ -1,47 +1,40 @@
-import uuid
+import contextlib
+import logging
+from typing import TYPE_CHECKING
 
 import aioboto3
-from fastapi import UploadFile
-from pydantic import AnyHttpUrl
 
 from beauty_be.conf.settings import settings
+from beauty_be.exceptions import AWSClientError
+
+if TYPE_CHECKING:
+    from aiobotocore.client import AioBaseClient
+
+logger = logging.getLogger(__name__)
 
 
 class AWSClient:
-    class ROUTES:
-        IMAGE: str = '{env}/attachments/{uuid}.{type}'
+    CLIENT_TYPE: str
 
     def __init__(self):
+        self._client = None
+        self._context_stack = contextlib.AsyncExitStack()
         self.session = aioboto3.Session(
             aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
             aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
         )
-        self.bucket_name = settings.S3_BUCKET_NAME
 
-    async def save_image(self, file: UploadFile) -> AnyHttpUrl:
-        async with self.session.client(
-            's3',
-            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-        ) as s3:
-            s3_route = self.ROUTES.IMAGE.format(
-                env=settings.ENV,
-                uuid=str(uuid.uuid4()),
-                type=str(file.filename).split('.')[-1],
-            )
-            await s3.upload_fileobj(file, self.bucket_name, s3_route, ExtraArgs={'ACL': 'public-read'})
-            return self._generate_s3_path(s3_route)
+    @property
+    def client(self) -> 'AioBaseClient':
+        if not self._client:
+            raise AWSClientError(f'AWS {self.CLIENT_TYPE.upper()} client not configured')
+        return self._client
 
-    def _generate_s3_path(self, path: str) -> AnyHttpUrl:
-        url = 'https://{bucket_name}.s3.{region}.amazonaws.com/{path}'.format(
-            bucket_name=self.bucket_name,
-            region=settings.AWS_DEFAULT_REGION,
-            path=path,
+    async def configure(self, region: str = settings.AWS_DEFAULT_REGION):
+        self._client = await self._context_stack.enter_async_context(
+            self.session.client(self.CLIENT_TYPE, region_name=region)
         )
-        return AnyHttpUrl(url=url)
+        logger.info({'message': f'AWS {self.CLIENT_TYPE.upper()} client has been configured.'})
 
-    async def delete_s3_obj(self, url: AnyHttpUrl) -> None:
-        file_key = '/'.join(str(url).split('/')[-3:])
-        async with self.session.resource('s3') as s3:
-            bucket = await s3.Bucket(self.bucket_name)
-            await bucket.objects.filter(Key=file_key).delete()
+    async def close(self):
+        await self._context_stack.aclose()

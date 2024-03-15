@@ -7,11 +7,14 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.sql.functions import count
 
+from beauty_be.clients import aws_sqs_client
 from beauty_be.conf.constants import ErrorMessages
 from beauty_be.exceptions import DoesNotExistError
 from beauty_be.schemas.analytic import BookingAnalyticSchema
 from beauty_be.schemas.booking import BookingCreateSchema
 from beauty_be.schemas.booking import BookingUpdateSchema
+from beauty_be.schemas.notification import SMSPayloadSchema
+from beauty_be.schemas.notification import SMSTemplate
 from beauty_be.services.base import BaseService
 from beauty_models.beauty_models.models import Attachment
 from beauty_models.beauty_models.models import Booking
@@ -58,7 +61,22 @@ class BookingService(BaseService[Booking]):
         booking.offers.extend(offers)
         booking.attachments.extend(attachments)
         obj = await self.insert_obj(booking)
-        return await self.get_info(obj.id)
+        booking = await self.get_info(obj.id)
+        await self.send_new_booking_notification(booking, user)
+        return booking
+
+    @staticmethod
+    async def send_new_booking_notification(booking: Booking, user: User) -> None:
+        body = SMSPayloadSchema(
+            phone_number=booking.business.phone_number,
+            template=SMSTemplate.NEW_ORDER,
+            values={
+                'name': user.name,
+                'phone_number': user.phone_number,
+                'date_time': booking.start_time.strftime('%d.%m.%Y %H:%M'),
+            },
+        )
+        await aws_sqs_client.send_sms_notification(body, int(user.id))
 
     async def get_by_business(self, business_id: int, merchant: Merchant) -> Sequence[Booking]:
         query = (
@@ -75,12 +93,13 @@ class BookingService(BaseService[Booking]):
         )
         return await self.fetch_all(query=query)
 
-    async def cancel_booking(self, booking_id: int, merchant: Merchant) -> None:
+    async def cancel_booking(self, booking_id: int, merchant: Merchant) -> Booking | None:
         await self.update(
             filters=(self.MODEL.id == booking_id, self.MODEL.business.has(Business.owner_id == merchant.id)),
             values={'status': BookingStatus.CANCELLED},
         )
         await self.session.commit()
+        return await self.fetch_one(filters=(self.MODEL.id == booking_id,))
 
     async def confirm_booking(self, booking_id: int, merchant: Merchant) -> Booking:
         await self.update(

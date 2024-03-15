@@ -41,3 +41,9 @@ aioboto3
 fileobj
 atta
 slugify
+sms
+sqs
+deduplication
+aiobotocore
+aio
+aclose

@@ -13,6 +13,7 @@ from beauty_be.api.dependencies.service import get_user_service
 from beauty_be.schemas.booking import BookingCreateSchema
 from beauty_be.schemas.booking import BookingSchema
 from beauty_be.schemas.booking import BookingUpdateSchema
+from beauty_be.schemas.notification import SMSTemplate
 from beauty_be.services.attachment_service import AttachmentService
 from beauty_be.services.booking import BookingService
 from beauty_be.services.offer import OfferService
@@ -107,9 +108,12 @@ async def get_bookings_for_business(
 async def cancel_booking(
     booking_id: int,
     merchant: Merchant = Depends(authenticate_merchant),
+    user_service: UserService = Depends(get_user_service),
     booking_service: BookingService = Depends(get_booking_service),
 ) -> None:
-    await booking_service.cancel_booking(booking_id, merchant)
+    booking = await booking_service.cancel_booking(booking_id, merchant)
+    if booking:
+        await user_service.notify_user(booking, SMSTemplate.ORDER_CANCELLED)
 
 
 @router.patch(
@@ -124,6 +128,9 @@ async def cancel_booking(
 async def confirm_booking(
     booking_id: int,
     merchant: Merchant = Depends(authenticate_merchant),
+    user_service: UserService = Depends(get_user_service),
     booking_service: BookingService = Depends(get_booking_service),
 ) -> Booking:
-    return await booking_service.confirm_booking(booking_id, merchant)
+    booking = await booking_service.confirm_booking(booking_id, merchant)
+    await user_service.notify_user(booking, SMSTemplate.ORDER_CANCELLED)
+    return booking

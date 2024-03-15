@@ -41,6 +41,7 @@ class Settings(BaseSettings):
     AWS_DEFAULT_REGION: str = 'eu-central-1'
     AWS_ACCESS_KEY_ID: str = ''
     AWS_SECRET_ACCESS_KEY: str = ''
+    SQS_SMS_NOTIFICATION_QUEUE: str = ''
 
     @property
     def sqlalchemy_database_uri(self):
