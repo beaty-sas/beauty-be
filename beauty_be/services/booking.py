@@ -71,7 +71,7 @@ class BookingService(BaseService[Booking]):
             phone_number=booking.business.phone_number,
             template=SMSTemplate.NEW_ORDER,
             values={
-                'name': user.name,
+                'name': user.display_name,
                 'phone_number': user.phone_number,
                 'date_time': booking.start_time.strftime('%d.%m.%Y %H:%M'),
             },

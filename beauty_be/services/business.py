@@ -26,7 +26,7 @@ class BusinessService(BaseService[Business]):
         if obj := await self.fetch_one(filters=filters, options=options):
             return obj
 
-        raise DoesNotExistError(ErrorMessages.OBJECT_NOT_FOUND.format(object_type=self.MODEL.__name__, slug=slug))
+        raise DoesNotExistError(ErrorMessages.EXPERT_NOT_FOUND.format(object_type=self.MODEL.__name__, slug=slug))
 
     async def is_merchant_business(self, slug: str, merchant_id: int) -> bool:
         if await self.fetch_one(filters=(self.MODEL.slug == slug, self.MODEL.owner_id == merchant_id)):
