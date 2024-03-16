@@ -14,3 +14,8 @@ class SMSPayloadSchema(BaseModel):
     phone_number: str
     template: SMSTemplate
     values: dict[str, Any]
+
+
+class SQSNotificationSchema(BaseModel):
+    send_sms: bool = True
+    sms_data: SMSPayloadSchema

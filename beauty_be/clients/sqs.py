@@ -5,6 +5,7 @@ from typing import Dict
 from beauty_be.clients.aws import AWSClient
 from beauty_be.conf.settings import settings
 from beauty_be.schemas.notification import SMSPayloadSchema
+from beauty_be.schemas.notification import SQSNotificationSchema
 
 logger = logging.getLogger(__name__)
 
@@ -26,8 +27,9 @@ class AWSSQSClient(AWSClient):
         self._check_response(response, queue, user_id=user_id)
 
     async def send_sms_notification(self, body: SMSPayloadSchema, user_id: int) -> None:
-        await self.send_message(settings.SQS_SMS_NOTIFICATION_QUEUE, body.json(), user_id)
-        logger.info({'message': 'SQS sms notification has been send', 'user_id': user_id, 'json': body.dict()})
+        data = SQSNotificationSchema(send_sms=True, sms_data=body)
+        await self.send_message(settings.SQS_SMS_NOTIFICATION_QUEUE, data.json(), user_id)
+        logger.info({'message': 'SQS sms notification has been send', 'user_id': user_id, 'json': data.dict()})
 
     @staticmethod
     def _check_response(response: Dict, queue: str, user_id: int) -> None:

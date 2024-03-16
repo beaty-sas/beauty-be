@@ -25,7 +25,7 @@ class UserService(BaseService[User]):
             return
 
         body = SMSPayloadSchema(
-            phone_number=str(user.phone_number),
+            phone_number=str(user.phone_number.replace(' ', '')),
             template=template,
             values={
                 'date_time': booking.start_time.strftime('%d.%m.%Y %H:%M'),
