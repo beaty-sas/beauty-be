@@ -8,16 +8,20 @@ from beauty_be.api.dependencies.auth import authenticate_merchant
 from beauty_be.api.dependencies.logger import LoggingRoute
 from beauty_be.api.dependencies.service import get_attachment_service
 from beauty_be.api.dependencies.service import get_booking_service
+from beauty_be.api.dependencies.service import get_business_service
 from beauty_be.api.dependencies.service import get_offer_service
 from beauty_be.api.dependencies.service import get_user_service
+from beauty_be.api.dependencies.service import get_working_hours_service
 from beauty_be.schemas.booking import BookingCreateSchema
 from beauty_be.schemas.booking import BookingSchema
 from beauty_be.schemas.booking import BookingUpdateSchema
 from beauty_be.schemas.notification import SMSTemplate
 from beauty_be.services.attachment_service import AttachmentService
 from beauty_be.services.booking import BookingService
+from beauty_be.services.business import BusinessService
 from beauty_be.services.offer import OfferService
 from beauty_be.services.user import UserService
+from beauty_be.services.working_hours import WorkingHoursService
 from beauty_models.beauty_models.models import Booking
 from beauty_models.beauty_models.models import Merchant
 
@@ -38,10 +42,14 @@ async def make_new_booking(
     user_service: UserService = Depends(get_user_service),
     offer_service: OfferService = Depends(get_offer_service),
     booking_service: BookingService = Depends(get_booking_service),
+    business_service: BusinessService = Depends(get_business_service),
     attachment_service: AttachmentService = Depends(get_attachment_service),
+    working_hours_service: WorkingHoursService = Depends(get_working_hours_service),
 ) -> BookingSchema:
+    business = await business_service.get_by_id(request_data.business_id)
     user = await user_service.get_or_create_by_phone_number(request_data.user)
     offers = await offer_service.get_by_ids(request_data.offers)
+    await working_hours_service.validate_booking(request_data.start_time, business, offers)
     attachments = await attachment_service.get_by_ids(request_data.attachments)
     return await booking_service.create_booking(request_data, offers, attachments, user)
 

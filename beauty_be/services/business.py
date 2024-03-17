@@ -82,3 +82,9 @@ class BusinessService(BaseService[Business]):
 
     async def get_businesses_slug(self) -> Sequence[str]:
         return await self.fetch_all(query=select(self.MODEL.slug))
+
+    async def get_by_id(self, business_id: int) -> Business:
+        if obj := await self.fetch_one(filters=(self.MODEL.id == business_id,)):
+            return obj
+
+        raise DoesNotExistError(ErrorMessages.OBJECT_NOT_FOUND.format(object_type=self.MODEL.__name__, id=business_id))

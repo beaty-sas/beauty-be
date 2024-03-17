@@ -7,6 +7,7 @@ from sqlalchemy import func
 from sqlalchemy import select
 
 from beauty_be.conf.settings import settings
+from beauty_be.exceptions import ValidationError
 from beauty_be.schemas.working_hours import AvailableBookHourSchema
 from beauty_be.schemas.working_hours import WorkingHoursCreateSchema
 from beauty_be.services.base import BaseService
@@ -14,6 +15,7 @@ from beauty_models.beauty_models.models import Booking
 from beauty_models.beauty_models.models import BookingStatus
 from beauty_models.beauty_models.models import Business
 from beauty_models.beauty_models.models import Merchant
+from beauty_models.beauty_models.models import Offer
 from beauty_models.beauty_models.models import WorkingHours
 
 
@@ -89,10 +91,7 @@ class WorkingHoursService(BaseService[WorkingHours]):
                     current_time += timedelta(seconds=settings.DEFAULT_BOOKING_TIME_STEP)  # type: ignore
                     continue
 
-                if (
-                    hour.date_from.hour in booked_slots
-                    or (current_time + timedelta(seconds=duration)).hour in booked_slots
-                ):
+                if current_time.hour in booked_slots:
                     current_time += timedelta(seconds=settings.DEFAULT_BOOKING_TIME_STEP)  # type: ignore
                     continue
 
@@ -121,3 +120,18 @@ class WorkingHoursService(BaseService[WorkingHours]):
     async def delete_working_hour(self, working_hours_id: int) -> None:
         await self.bulk_delete(filters=(self.MODEL.id == working_hours_id,))
         await self.session.commit()
+
+    async def validate_booking(self, start_time: datetime, business: Business, offers: Sequence[Offer]) -> None:
+        duration: int = sum(int(offer.duration) for offer in offers)
+        available_slots = await self.get_available_hours(
+            str(business.slug),
+            start_time.strftime(settings.DEFAULT_DATE_FORMAT),
+            duration,
+        )
+        available_time_slots = [slot.time for slot in available_slots]
+        booking_end_time = start_time + timedelta(seconds=duration)
+        booking_time_slots = [f'{i}:00' for i in range(start_time.hour, booking_end_time.hour)]
+
+        for slot in booking_time_slots:
+            if slot not in available_time_slots:
+                raise ValidationError('Booking time is not available')
