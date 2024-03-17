@@ -62,7 +62,7 @@ class BookingService(BaseService[Booking]):
         booking.attachments.extend(attachments)
         obj = await self.insert_obj(booking)
         booking = await self.get_info(obj.id)
-        # await self.send_new_booking_notification(booking, user)
+        await self.send_new_booking_notification(booking, user)
         return booking
 
     @staticmethod

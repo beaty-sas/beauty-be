@@ -47,3 +47,4 @@ deduplication
 aiobotocore
 aio
 aclose
+openapi

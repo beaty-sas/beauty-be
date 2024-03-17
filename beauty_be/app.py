@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import create_async_engine
 
@@ -19,6 +21,7 @@ from beauty_be.exception_handlers import init_exception_handlers
 from beauty_be.middlewares import init_middlewares
 from beauty_models.beauty_models.models import metadata
 
+logger = logging.getLogger(__name__)
 PREFIX = '/api'
 
 
@@ -47,9 +50,10 @@ def create_app(app_settings: Settings | None = None) -> FastAPI:
         debug=app_settings.DEBUG,
         docs_url='/api/docs',
         redoc_url='/api/redoc',
+        openapi_url=f'{PREFIX}/openapi.json',
         version=__version__,
     )
-    init_middlewares(app, app_settings)
+    init_middlewares(app)
     init_exception_handlers(app)
     init_routes(app)
 

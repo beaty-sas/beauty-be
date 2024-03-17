@@ -50,7 +50,7 @@ LOG_CONFIG = {
         },
     },
     'loggers': {
-        'companion_be': {'handlers': ['default'], 'level': log_level},
+        'beauty_be': {'handlers': ['default'], 'level': log_level},
         'uvicorn': {'handlers': ['gunicorn_uvicorn'], 'level': log_level},
         'gunicorn': {'handlers': ['gunicorn_uvicorn'], 'level': log_level},
         'gunicorn.access': {'handlers': ['gunicorn_uvicorn'], 'level': log_level},
