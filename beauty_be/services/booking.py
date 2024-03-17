@@ -3,6 +3,7 @@ from datetime import timedelta
 from datetime import timezone
 from typing import Sequence
 
+from sqlalchemy import func
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.sql.functions import count
@@ -140,7 +141,7 @@ class BookingService(BaseService[Booking]):
         )
         today = await self.fetch_count(
             query=query.filter(
-                self.MODEL.start_time == now_date,
+                func.date(self.MODEL.start_time) == now_date,
             )
         )
         return BookingAnalyticSchema(total=total, future=future, today=today)
