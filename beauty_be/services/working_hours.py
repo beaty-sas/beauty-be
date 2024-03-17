@@ -122,7 +122,7 @@ class WorkingHoursService(BaseService[WorkingHours]):
         await self.session.commit()
 
     async def validate_booking(self, start_time: datetime, business: Business, offers: Sequence[Offer]) -> None:
-        duration: int = sum(int(offer.duration) for offer in offers)
+        duration = sum(int(offer.duration) for offer in offers)
         available_slots = await self.get_available_hours(
             str(business.slug),
             start_time.strftime(settings.DEFAULT_DATE_FORMAT),
