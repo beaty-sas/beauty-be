@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from beauty_be import __version__
 from beauty_be.api import analytic
 from beauty_be.api import attachments
+from beauty_be.api import auth
 from beauty_be.api import base
 from beauty_be.api import booking
 from beauty_be.api import business
@@ -27,6 +28,7 @@ PREFIX = '/api'
 
 def init_routes(app: 'FastAPI') -> None:
     app.include_router(base.router, tags=['Base'], prefix=PREFIX)
+    app.include_router(auth.router, tags=['Auth'], prefix=PREFIX)
     app.include_router(offer.router, tags=['Offer'], prefix=PREFIX)
     app.include_router(booking.router, tags=['Booking'], prefix=PREFIX)
     app.include_router(business.router, tags=['Business'], prefix=PREFIX)

@@ -36,6 +36,10 @@ class Settings(BaseSettings):
     DEFAULT_BOOKING_TIME_STEP: int = 3600
 
     AUTH0_URL: str = 'https://reserve-exp.eu.auth0.com'
+    AUTH0_CLIENT_ID: str = ''
+    AUTH0_AUDIENCE: str = 'https://reserve-exp.eu.auth0.com/api/v2/'
+    AUTH0_CLIENT_SECRET: str = ''
+    AUTH0_DATABASE: str = ''
 
     S3_BUCKET_NAME: str = 'reserve-attachemtns'
     AWS_DEFAULT_REGION: str = 'eu-central-1'
