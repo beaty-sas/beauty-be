@@ -29,9 +29,7 @@ async def get_merchant_profile(
     merchant: Merchant = Depends(authenticate_merchant),
     business_service: BusinessService = Depends(get_business_service),
 ) -> MerchantSchema:
-    business = await business_service.get_info_by_merchant(int(merchant.id))
-    merchant.business_id = business.id
-    return merchant
+    return await business_service.get_info_by_merchant(int(merchant.id))
 
 
 @router.patch(
