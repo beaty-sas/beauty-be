@@ -1,16 +1,14 @@
 from pydantic import BaseModel
 
-from beauty_be.schemas.attachment import AttachmentSchema
-from beauty_be.schemas.location import LocationSchema
+from beauty_be.schemas.business import BaseBusinessSchema
 
 
 class MerchantSchema(BaseModel):
     sub: str
     display_name: str | None
     phone_number: str | None
-    logo: AttachmentSchema | None
-    banner: AttachmentSchema | None
-    location: LocationSchema | None
+    logo_id: int | None
+    businesses: list[BaseBusinessSchema]
 
     class Config:
         from_attributes = True
