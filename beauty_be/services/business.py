@@ -28,6 +28,18 @@ class BusinessService(BaseService[Business]):
 
         raise DoesNotExistError(ErrorMessages.EXPERT_NOT_FOUND.format(object_type=self.MODEL.__name__, slug=slug))
 
+    async def get_info_by_id(self, business_id: int) -> Business:
+        filters = (self.MODEL.id == business_id,)
+        options = (
+            selectinload(self.MODEL.logo),
+            selectinload(self.MODEL.banner),
+            selectinload(self.MODEL.location),
+        )
+        if obj := await self.fetch_one(filters=filters, options=options):
+            return obj
+
+        raise DoesNotExistError(ErrorMessages.OBJECT_NOT_FOUND.format(object_type=self.MODEL.__name__, id=business_id))
+
     async def is_merchant_business(self, slug: str, merchant_id: int) -> bool:
         if await self.fetch_one(filters=(self.MODEL.slug == slug, self.MODEL.owner_id == merchant_id)):
             return True
@@ -52,22 +64,16 @@ class BusinessService(BaseService[Business]):
         raise DoesNotExistError(ErrorMessages.OBJECT_NOT_FOUND.format(object_type=self.MODEL.__name__, id=merchant_id))
 
     async def update_info(self, business_id: int, merchant: Merchant, data: UpdateBusinessSchema) -> Business:
-        if await self.is_merchant_business_by_id(business_id, int(merchant.id)):
-            await self.update(
-                filters=(self.MODEL.id == business_id,),
-                values={
-                    'display_name': data.display_name,
-                    'phone_number': data.phone_number,
-                    'logo_id': data.logo_id,
-                    'banner_id': data.banner_id,
-                    'slug': slugify(data.display_name),
-                    'description': data.description,
-                },
-            )
-            await self.session.commit()
-            return await self.get_info(slugify(data.display_name))
+        if not await self.is_merchant_business_by_id(business_id, int(merchant.id)):
+            raise AuthError(ErrorMessages.NOT_ENOUGH_PERMISSIONS)
 
-        raise AuthError(ErrorMessages.NOT_ENOUGH_PERMISSIONS)
+        values_to_update = data.dict(exclude_unset=True, exclude_none=True)
+        if data.display_name:
+            values_to_update.update({'slug': slugify(data.display_name)})
+
+        await self.update(filters=(self.MODEL.id == business_id,), values=values_to_update)
+        await self.session.commit()
+        return await self.get_info_by_id(business_id)
 
     async def create_business(self, merchant: Merchant) -> Business:
         business = Business(

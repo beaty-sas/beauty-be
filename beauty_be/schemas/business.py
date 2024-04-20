@@ -21,9 +21,9 @@ class BusinessSchema(BaseBusinessSchema):
 
 
 class UpdateBusinessSchema(BaseModel):
-    display_name: str
-    phone_number: str
+    display_name: str | None = None
+    phone_number: str | None = None
     description: str | None = None
     logo_id: int | None = None
     banner_id: int | None = None
-    location: LocationSchema
+    location: LocationSchema | None = None

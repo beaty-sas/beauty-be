@@ -86,7 +86,8 @@ async def update_business_info(
     location_service: LocationService = Depends(get_location_service),
 ) -> Business:
     business = await business_service.update_info(business_id, merchant, request_data)
-    await location_service.update_or_create_name(business, request_data.location.name)
+    if request_data.location:
+        await location_service.update_or_create_name(business, request_data.location.name)
     return business
 
 
