@@ -1,3 +1,4 @@
+from beauty_be.clients import aws_sns_client
 from beauty_be.clients import aws_sqs_client
 from beauty_be.schemas.notification import SMSPayloadSchema
 from beauty_be.schemas.notification import SMSTemplate
@@ -32,3 +33,4 @@ class UserService(BaseService[User]):
             },
         )
         await aws_sqs_client.send_sms_notification(body, int(user.id))
+        await aws_sns_client.send_sms_notification(body, int(user.id))

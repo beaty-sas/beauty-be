@@ -46,6 +46,7 @@ class Settings(BaseSettings):
     AWS_ACCESS_KEY_ID: str = ''
     AWS_SECRET_ACCESS_KEY: str = ''
     SQS_SMS_NOTIFICATION_QUEUE: str = ''
+    SNS_SMS_TOPIC_ARN: str = ''
 
     @property
     def sqlalchemy_database_uri(self):
