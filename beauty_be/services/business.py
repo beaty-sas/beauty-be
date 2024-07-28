@@ -69,7 +69,7 @@ class BusinessService(BaseService[Business]):
 
         values_to_update = data.dict(exclude_unset=True, exclude_none=True)
         if data.display_name:
-            values_to_update.update({'slug': slugify(data.display_name)})
+            values_to_update['slug'] = str(slugify(data.display_name))
 
         await self.update(filters=(self.MODEL.id == business_id,), values=values_to_update)
         await self.session.commit()
