@@ -68,6 +68,7 @@ class BusinessService(BaseService[Business]):
             raise AuthError(ErrorMessages.NOT_ENOUGH_PERMISSIONS)
 
         values_to_update = data.dict(exclude_unset=True, exclude_none=True)
+        values_to_update.pop('location', None)
         if data.display_name:
             values_to_update['slug'] = str(slugify(data.display_name))
 
