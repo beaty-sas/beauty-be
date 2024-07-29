@@ -15,6 +15,7 @@ from beauty_be.api import offer
 from beauty_be.api import working_hours
 from beauty_be.clients import aws_s3_client
 from beauty_be.clients import aws_sqs_client
+from beauty_be.clients import aws_sns_client
 from beauty_be.conf.db import async_session
 from beauty_be.conf.settings import Settings
 from beauty_be.conf.settings import settings
@@ -63,10 +64,12 @@ def create_app(app_settings: Settings | None = None) -> FastAPI:
     async def startup():
         await aws_s3_client.configure()
         await aws_sqs_client.configure()
+        await aws_sns_client.configure()
 
     @app.on_event('shutdown')
     async def shutdown():
         await aws_s3_client.close()
         await aws_sqs_client.close()
+        await aws_sns_client.close()
 
     return app
