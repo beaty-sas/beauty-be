@@ -13,9 +13,9 @@ class AWSSNSClient(AWSClient):
     async def send_sms_notification(self, body: SMSPayloadSchema, user_id: int) -> None:
         # Форматирование сообщения
         message = (
-            f"Нове бронювання від {body.values['name']}, "
-            f"за номером {body.values['phone_number']} "
-            f"на {body.values['date_time']}."
+            f"Нове бронювання від {body.name}, "
+            f"за номером {body.phone_number} "
+            f"на {body.date_time}."
         )
 
         await self.client.publish(
