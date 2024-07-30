@@ -11,9 +11,20 @@ class AWSSNSClient(AWSClient):
     CLIENT_TYPE = 'sns'
 
     async def send_sms_notification(self, body: SMSPayloadSchema, user_id: int) -> None:
+        # Форматирование сообщения
+        message = (
+            f"Нове бронювання від {body.values['name']}, "
+            f"за номером {body.values['phone_number']} "
+            f"на {body.values['date_time']}."
+        )
+
         await self.client.publish(
             PhoneNumber=body.phone_number,
-            Message=body.json(),
+            Message=message
             # TopicArn=settings.SNS_SMS_TOPIC_ARN,
         )
-        logger.info({'message': 'SNS sms notification has been send', 'user_id': user_id, 'json': body.dict()})
+        logger.info({
+            'message': 'SNS sms notification has been sent',
+            'user_id': user_id,
+            'json': body.dict()
+        })
