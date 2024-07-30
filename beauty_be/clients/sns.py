@@ -14,6 +14,6 @@ class AWSSNSClient(AWSClient):
         await self.client.publish(
             PhoneNumber=body.phone_number,
             Message=body.json(),
-            TopicArn=settings.SNS_SMS_TOPIC_ARN,
+            # TopicArn=settings.SNS_SMS_TOPIC_ARN,
         )
         logger.info({'message': 'SNS sms notification has been send', 'user_id': user_id, 'json': body.dict()})
