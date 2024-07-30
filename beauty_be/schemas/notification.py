@@ -12,6 +12,8 @@ class SMSTemplate(str, Enum):
 
 class SMSPayloadSchema(BaseModel):
     phone_number: str
+    name: str
+    date_time: str
     template: SMSTemplate
     values: dict[str, Any]
 
