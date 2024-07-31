@@ -7,21 +7,23 @@ from beauty_be.schemas.notification import SMSPayloadSchema
 logger = logging.getLogger(__name__)
 
 
+def get_message_text(body: SMSPayloadSchema) -> str:
+    if body.template == SMSTemplate.NEW_ORDER:
+        return f'Нове бронювання від {body.name} на {body.date_time}'
+    if body.template == SMSTemplate.ORDER_CONFIRMED:
+        return f'Ваше бронювання на {body.date_time} підтверджено'
+    if body.template == SMSTemplate.ORDER_CANCELLED:
+        return f'Ваше бронювання на {body.date_time} скасовано'
+
+
 class AWSSNSClient(AWSClient):
     CLIENT_TYPE = 'sns'
 
     async def send_sms_notification(self, body: SMSPayloadSchema, user_id: int) -> None:
-        # Форматирование сообщения
-        message = (
-            f"Нове бронювання від {.name}, "
-            f"за номером {.phone_number} "
-            f"на {.date_time}."
-        )
-
+        message = get_message_text(body)
         await self.client.publish(
             PhoneNumber=body.phone_number,
             Message=message
-            # TopicArn=settings.SNS_SMS_TOPIC_ARN,
         )
         logger.info({
             'message': 'SNS sms notification has been sent',
