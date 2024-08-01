@@ -3,6 +3,7 @@ import logging
 from beauty_be.clients.aws import AWSClient
 from beauty_be.conf.settings import settings
 from beauty_be.schemas.notification import SMSPayloadSchema
+from beauty_be.schemas.notification import SMSTemplate
 
 logger = logging.getLogger(__name__)
 
