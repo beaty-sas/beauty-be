@@ -140,5 +140,5 @@ async def confirm_booking(
     booking_service: BookingService = Depends(get_booking_service),
 ) -> Booking:
     booking = await booking_service.confirm_booking(booking_id, merchant)
-    await user_service.notify_user(booking, SMSTemplate.ORDER_CANCELLED)
+    await user_service.notify_user(booking, SMSTemplate.ORDER_CONFIRMED)
     return booking
