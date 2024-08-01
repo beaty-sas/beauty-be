@@ -10,11 +10,11 @@ logger = logging.getLogger(__name__)
 
 def get_message_text(body: SMSPayloadSchema) -> str:
     if body.template == SMSTemplate.NEW_ORDER:
-        return f'Нове бронювання від {body.name} на {body.date_time}'
+        return f'Нове бронювання від {body.values["name"]} на {body.values["date_time"]}. Телефон: {body.values["phone_number"]}'
     if body.template == SMSTemplate.ORDER_CONFIRMED:
-        return f'Ваше бронювання на {body.date_time} підтверджено'
+        return f'Ваше бронювання на {body.values["date_time"]} підтверджено'
     if body.template == SMSTemplate.ORDER_CANCELLED:
-        return f'Ваше бронювання на {body.date_time} скасовано'
+        return f'Ваше бронювання на {body.values["date_time"]} скасовано'
 
 
 class AWSSNSClient(AWSClient):
