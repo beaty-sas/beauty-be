@@ -8,7 +8,6 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.sql.functions import count
 
-from beauty_be.clients import aws_sns_client
 from beauty_be.clients import aws_sqs_client
 from beauty_be.conf.constants import ErrorMessages
 from beauty_be.exceptions import DoesNotExistError
@@ -79,7 +78,6 @@ class BookingService(BaseService[Booking]):
             },
         )
         await aws_sqs_client.send_sms_notification(body, int(user.id))
-        await aws_sns_client.send_sms_notification(body, int(user.id))
 
     async def get_by_business(self, business_id: int, merchant: Merchant) -> Sequence[Booking]:
         query = (
