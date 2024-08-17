@@ -8,15 +8,15 @@ from sqlalchemy import select
 
 from beauty_be.conf.settings import settings
 from beauty_be.exceptions import ValidationError
+from beauty_be.models import Booking
+from beauty_be.models import BookingStatus
+from beauty_be.models import Business
+from beauty_be.models import Merchant
+from beauty_be.models import Offer
+from beauty_be.models import WorkingHours
 from beauty_be.schemas.working_hours import AvailableBookHourSchema
 from beauty_be.schemas.working_hours import WorkingHoursCreateSchema
 from beauty_be.services.base import BaseService
-from beauty_models.beauty_models.models import Booking
-from beauty_models.beauty_models.models import BookingStatus
-from beauty_models.beauty_models.models import Business
-from beauty_models.beauty_models.models import Merchant
-from beauty_models.beauty_models.models import Offer
-from beauty_models.beauty_models.models import WorkingHours
 
 
 class WorkingHoursService(BaseService[WorkingHours]):

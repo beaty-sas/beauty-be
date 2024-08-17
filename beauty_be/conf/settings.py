@@ -1,7 +1,6 @@
 from enum import Enum
 
 from pydantic_settings import BaseSettings
-from sqlalchemy.engine.url import URL
 
 
 class LogLevel(str, Enum):
@@ -13,6 +12,7 @@ class LogLevel(str, Enum):
 
 
 class Env(str, Enum):
+    TESTING = 'TESTING'
     LOCAL = 'LOCAL'
     STAGING = 'STAGING'
     PRODUCTION = 'PRODUCTION'
@@ -50,14 +50,7 @@ class Settings(BaseSettings):
 
     @property
     def sqlalchemy_database_uri(self):
-        return URL.create(
-            drivername=self.DB_DRIVER,
-            username=self.DB_USER,
-            password=self.DB_PASS,
-            host=self.DB_HOST,
-            port=self.DB_PORT,
-            database=self.DB_NAME,
-        )
+        return f'{self.DB_DRIVER}://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}'  # noqa
 
 
 settings = Settings()

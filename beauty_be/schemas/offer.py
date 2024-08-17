@@ -1,17 +1,17 @@
 from decimal import Decimal
 
 from pydantic import BaseModel
+from pydantic import ConfigDict
 
 
 class OfferSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     name: str
     price: Decimal
     duration: int
     allow_photo: bool
-
-    class Config:
-        from_attributes = True
 
 
 class CreateOfferRequestSchema(BaseModel):

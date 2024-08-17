@@ -1,4 +1,6 @@
 import logging
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator
 
 from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import create_async_engine
@@ -20,7 +22,7 @@ from beauty_be.conf.settings import Settings
 from beauty_be.conf.settings import settings
 from beauty_be.exception_handlers import init_exception_handlers
 from beauty_be.middlewares import init_middlewares
-from beauty_models.beauty_models.models import metadata
+from beauty_be.models.base import metadata
 
 logger = logging.getLogger(__name__)
 PREFIX = '/api'
@@ -44,6 +46,17 @@ def init_db(app_settings: Settings):
     metadata.bind = engine  # type: ignore
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    await aws_s3_client.configure()
+    await aws_sqs_client.configure()
+
+    yield
+
+    await aws_s3_client.close()
+    await aws_sqs_client.close()
+
+
 def create_app(app_settings: Settings | None = None) -> FastAPI:
     app_settings = app_settings if app_settings is not None else settings
     init_db(app_settings)
@@ -54,19 +67,9 @@ def create_app(app_settings: Settings | None = None) -> FastAPI:
         redoc_url='/api/redoc',
         openapi_url=f'{PREFIX}/openapi.json',
         version=__version__,
+        lifespan=lifespan,
     )
     init_middlewares(app)
     init_exception_handlers(app)
     init_routes(app)
-
-    @app.on_event('startup')
-    async def startup():
-        await aws_s3_client.configure()
-        await aws_sqs_client.configure()
-
-    @app.on_event('shutdown')
-    async def shutdown():
-        await aws_s3_client.close()
-        await aws_sqs_client.close()
-
     return app

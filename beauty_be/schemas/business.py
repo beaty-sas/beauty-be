@@ -1,17 +1,17 @@
 from pydantic import BaseModel
+from pydantic import ConfigDict
 
 from beauty_be.schemas.attachment import AttachmentSchema
 from beauty_be.schemas.location import LocationSchema
 
 
 class BaseBusinessSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     display_name: str
     phone_number: str | None
     slug: str
-
-    class Config:
-        from_attributes = True
 
 
 class BusinessSchema(BaseBusinessSchema):

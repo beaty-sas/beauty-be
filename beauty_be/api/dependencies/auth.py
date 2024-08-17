@@ -16,7 +16,7 @@ from beauty_be.conf.settings import settings
 from beauty_be.exceptions import AuthError
 from beauty_be.services.business import BusinessService
 from beauty_be.services.merchant import MerchantService
-from beauty_models.beauty_models.models import Merchant
+from beauty_be.models.merchant import Merchant
 
 logger = logging.getLogger(__name__)
 oauth2_scheme = HTTPBearer(scheme_name='ServiceAuthHTTPBearer', auto_error=False)
@@ -57,10 +57,10 @@ def validate_access_token(token: str) -> dict[str, Any]:
 
 
 async def authenticate_merchant(
-    request: Request,
-    token: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
-    merchant_service: MerchantService = Depends(get_merchant_service),
-    business_service: BusinessService = Depends(get_business_service),
+        request: Request,
+        token: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
+        merchant_service: MerchantService = Depends(get_merchant_service),
+        business_service: BusinessService = Depends(get_business_service),
 ) -> Merchant:
     if not token:
         raise AuthError(ErrorMessages.NOT_AUTH)

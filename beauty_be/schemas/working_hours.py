@@ -1,22 +1,21 @@
 from datetime import datetime
 
 from pydantic import BaseModel
+from pydantic import ConfigDict
 
 
 class AvailableBookHourSchema(BaseModel):
-    time: str
+    model_config = ConfigDict(from_attributes=True)
 
-    class Config:
-        from_attributes = True
+    time: str
 
 
 class WorkingHoursBaseSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     date_from: datetime
     date_to: datetime
-
-    class Config:
-        from_attributes = True
 
 
 class WorkingHoursCreateSchema(BaseModel):

@@ -6,11 +6,11 @@ from sqlalchemy import select
 
 from beauty_be.conf.constants import ErrorMessages
 from beauty_be.exceptions import DoesNotExistError
+from beauty_be.models import Business
+from beauty_be.models import business_offers
+from beauty_be.models import Offer
 from beauty_be.schemas.offer import CreateOfferRequestSchema
 from beauty_be.services.base import BaseService
-from beauty_models.beauty_models.models import Business
-from beauty_models.beauty_models.models import business_offers
-from beauty_models.beauty_models.models import Offer
 
 
 class OfferService(BaseService[Offer]):
@@ -35,10 +35,11 @@ class OfferService(BaseService[Offer]):
     async def create_offer(self, data: CreateOfferRequestSchema) -> Offer:
         exist_offer = await self.fetch_one(
             filters=(
-                self.MODEL.id == data.business_id,
+                self.MODEL.businesses.any(Business.id == data.business_id),
                 self.MODEL.name == data.name,
             )
         )
+
         if exist_offer:
             updated_offer = await self.update_obj(
                 exist_offer,

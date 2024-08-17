@@ -6,9 +6,9 @@ from fastapi import Depends
 from beauty_be.api.dependencies.auth import authenticate_merchant
 from beauty_be.api.dependencies.logger import LoggingRoute
 from beauty_be.api.dependencies.service import get_booking_service
+from beauty_be.models import Merchant
 from beauty_be.schemas.analytic import BookingAnalyticSchema
 from beauty_be.services.booking import BookingService
-from beauty_models.beauty_models.models import Merchant
 
 router = APIRouter(route_class=LoggingRoute)
 

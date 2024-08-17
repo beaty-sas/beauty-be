@@ -5,6 +5,7 @@ from fastapi import Depends
 from fastapi import UploadFile
 
 from beauty_be.api.dependencies.service import get_attachment_service
+from beauty_be.models import Attachment
 from beauty_be.schemas.attachment import AttachmentSchema
 from beauty_be.services.attachment_service import AttachmentService
 
@@ -23,5 +24,5 @@ router = APIRouter()
 async def upload_attachments(
     attachment: UploadFile,
     attachment_service: AttachmentService = Depends(get_attachment_service),
-) -> AttachmentSchema:
+) -> Attachment:
     return await attachment_service.upload(attachment)

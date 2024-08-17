@@ -11,19 +11,19 @@ from sqlalchemy.sql.functions import count
 from beauty_be.clients import aws_sqs_client
 from beauty_be.conf.constants import ErrorMessages
 from beauty_be.exceptions import DoesNotExistError
+from beauty_be.models import Attachment
+from beauty_be.models import Booking
+from beauty_be.models import BookingStatus
+from beauty_be.models import Business
+from beauty_be.models import Merchant
+from beauty_be.models import Offer
+from beauty_be.models import User
 from beauty_be.schemas.analytic import BookingAnalyticSchema
 from beauty_be.schemas.booking import BookingCreateSchema
 from beauty_be.schemas.booking import BookingUpdateSchema
 from beauty_be.schemas.notification import SMSPayloadSchema
 from beauty_be.schemas.notification import SMSTemplate
 from beauty_be.services.base import BaseService
-from beauty_models.beauty_models.models import Attachment
-from beauty_models.beauty_models.models import Booking
-from beauty_models.beauty_models.models import BookingStatus
-from beauty_models.beauty_models.models import Business
-from beauty_models.beauty_models.models import Merchant
-from beauty_models.beauty_models.models import Offer
-from beauty_models.beauty_models.models import User
 
 
 class BookingService(BaseService[Booking]):
@@ -31,23 +31,23 @@ class BookingService(BaseService[Booking]):
 
     async def get_info(self, booking_id: int) -> Booking:
         if booking := await self.fetch_one(
-            filters=(self.MODEL.id == booking_id,),
-            options=(
-                selectinload(self.MODEL.business),
-                selectinload(self.MODEL.user),
-                selectinload(self.MODEL.offers),
-                selectinload(self.MODEL.attachments),
-            ),
+                filters=(self.MODEL.id == booking_id,),
+                options=(
+                        selectinload(self.MODEL.business),
+                        selectinload(self.MODEL.user),
+                        selectinload(self.MODEL.offers),
+                        selectinload(self.MODEL.attachments),
+                ),
         ):
             return booking
         raise DoesNotExistError(ErrorMessages.OBJECT_NOT_FOUND.format(object_type=self.MODEL.__name__, id=booking_id))
 
     async def create_booking(
-        self,
-        data: BookingCreateSchema,
-        offers: Sequence[Offer],
-        attachments: Sequence[Attachment],
-        user: User,
+            self,
+            data: BookingCreateSchema,
+            offers: Sequence[Offer],
+            attachments: Sequence[Attachment],
+            user: User,
     ) -> Booking:
         duration = timedelta(seconds=sum(offer.duration for offer in offers))  # type: ignore
         start_time = data.start_time.replace(tzinfo=timezone.utc)
@@ -112,12 +112,12 @@ class BookingService(BaseService[Booking]):
 
     async def get_info_by_merchant(self, booking_id: int, merchant: Merchant) -> Booking:
         if booking := await self.fetch_one(
-            filters=(self.MODEL.id == booking_id, self.MODEL.business.has(Business.owner_id == merchant.id)),
-            options=(
-                selectinload(self.MODEL.offers),
-                selectinload(self.MODEL.user),
-                selectinload(self.MODEL.attachments),
-            ),
+                filters=(self.MODEL.id == booking_id, self.MODEL.business.has(Business.owner_id == merchant.id)),
+                options=(
+                        selectinload(self.MODEL.offers),
+                        selectinload(self.MODEL.user),
+                        selectinload(self.MODEL.attachments),
+                ),
         ):
             return booking
         raise DoesNotExistError(ErrorMessages.OBJECT_NOT_FOUND.format(object_type=self.MODEL.__name__, id=booking_id))
@@ -125,7 +125,7 @@ class BookingService(BaseService[Booking]):
     async def update_booking(self, booking_id: int, merchant: Merchant, data: BookingUpdateSchema) -> Booking:
         await self.update(
             filters=(self.MODEL.id == booking_id, self.MODEL.business.has(Business.owner_id == merchant.id)),
-            values=data.dict(),
+            values=data.model_dump(),
         )
         await self.session.commit()
         return await self.get_info_by_merchant(booking_id, merchant)

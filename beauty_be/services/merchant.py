@@ -3,9 +3,9 @@ from sqlalchemy.orm import selectinload
 from beauty_be.clients.auth0 import auth0_client
 from beauty_be.conf.constants import ErrorMessages
 from beauty_be.exceptions import DoesNotExistError
+from beauty_be.models.merchant import Merchant
 from beauty_be.schemas.merchant import MerchantUpdateSchema
 from beauty_be.services.base import BaseService
-from beauty_models.beauty_models.models import Merchant
 
 
 class MerchantService(BaseService[Merchant]):
@@ -29,4 +29,5 @@ class MerchantService(BaseService[Merchant]):
         return await self.insert_obj(merchant)
 
     async def update_merchant(self, merchant: Merchant, data: MerchantUpdateSchema) -> Merchant:
-        return await self.update_obj(merchant, values=data.dict(exclude_unset=True))
+        await self.update_obj(merchant, values=data.model_dump(exclude_unset=True))
+        return await self.get_with_business(merchant.id)

@@ -29,7 +29,7 @@ class AWSSQSClient(AWSClient):
     async def send_sms_notification(self, body: SMSPayloadSchema, user_id: int) -> None:
         data = SQSNotificationSchema(send_sms=True, sms_data=body)
         await self.send_message(settings.SQS_SMS_NOTIFICATION_QUEUE, data.json(), user_id)
-        logger.info({'message': 'SQS sms notification has been send', 'user_id': user_id, 'json': data.dict()})
+        logger.info({'message': 'SQS sms notification has been send', 'user_id': user_id, 'json': data.model_dump()})
 
     @staticmethod
     def _check_response(response: Dict, queue: str, user_id: int) -> None:

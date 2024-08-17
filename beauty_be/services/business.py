@@ -7,10 +7,10 @@ from sqlalchemy.orm import selectinload
 from beauty_be.conf.constants import ErrorMessages
 from beauty_be.exceptions import AuthError
 from beauty_be.exceptions import DoesNotExistError
+from beauty_be.models import Business
+from beauty_be.models import Merchant
 from beauty_be.schemas.business import UpdateBusinessSchema
 from beauty_be.services.base import BaseService
-from beauty_models.beauty_models.models import Business
-from beauty_models.beauty_models.models import Merchant
 
 
 class BusinessService(BaseService[Business]):
@@ -52,12 +52,12 @@ class BusinessService(BaseService[Business]):
 
     async def get_info_by_merchant(self, merchant_id: int) -> Business:
         if obj := await self.fetch_one(
-            filters=(self.MODEL.owner_id == merchant_id,),
-            options=(
-                selectinload(self.MODEL.logo),
-                selectinload(self.MODEL.location),
-                selectinload(self.MODEL.banner),
-            ),
+                filters=(self.MODEL.owner_id == merchant_id,),
+                options=(
+                        selectinload(self.MODEL.logo),
+                        selectinload(self.MODEL.location),
+                        selectinload(self.MODEL.banner),
+                ),
         ):
             return obj
 
@@ -67,7 +67,7 @@ class BusinessService(BaseService[Business]):
         if not await self.is_merchant_business_by_id(business_id, int(merchant.id)):
             raise AuthError(ErrorMessages.NOT_ENOUGH_PERMISSIONS)
 
-        values_to_update = data.dict(exclude_unset=True, exclude_none=True)
+        values_to_update = data.model_dump(exclude_unset=True, exclude_none=True)
         values_to_update.pop('location', None)
         if data.display_name:
             values_to_update['slug'] = str(slugify(data.display_name))

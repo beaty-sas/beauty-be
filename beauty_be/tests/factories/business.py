@@ -1,24 +1,31 @@
 import factory
 
-from beauty_models.beauty_models.models import Business
+from beauty_be.models import Business
+from beauty_be.tests.factories.attachment import AttachmentFactory
+from beauty_be.tests.factories.base import BaseFactory
+from beauty_be.tests.factories.merchant import MerchantFactory
 
 
-class BusinessFactory(factory.Factory):
-    """Business factory"""
-
+class BusinessFactory(BaseFactory):
     name = factory.Faker('word')
+    slug = factory.Faker('word')
     display_name = factory.Faker('word')
+    description = factory.Faker('word')
     phone_number = factory.Faker('phone_number')
-    web_site = factory.Faker('url')
+
+    owner = factory.SubFactory(MerchantFactory)
+    logo = factory.SubFactory(AttachmentFactory)
+    banner = factory.SubFactory(AttachmentFactory)
+
+    class Meta:
+        model = Business
+        sqlalchemy_session_persistence = 'commit'
 
     @factory.post_generation
-    def services(self, create, extracted, **_):
+    def offers(self, create, extracted, **_):
         if not create:
             return
 
         if extracted:
-            for service in extracted:
-                self.services.append(service)
-
-    class Meta:
-        model = Business
+            for offer in extracted:
+                self.offers.append(offer)

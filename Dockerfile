@@ -1,4 +1,4 @@
-FROM python:3.11-slim-bullseye as base
+FROM python:3.12-slim-bullseye as base
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=off \
@@ -9,7 +9,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     DEBIAN_FRONTEND=noninteractive \
     COLUMNS=80
 
-WORKDIR /code/
+WORKDIR /app
 
 RUN apt-get update && apt-get install -y curl libpq-dev python-dev gcc
 
@@ -17,16 +17,9 @@ ENV POETRY_HOME=/usr/local/poetry
 RUN curl -sSL https://install.python-poetry.org | python -
 ENV PATH=$POETRY_HOME/bin:$PATH
 
-COPY pyproject.toml /code/
-COPY poetry.lock /code/
-COPY docker-entrypoint.sh /code/
-COPY server.py /code/
-COPY gunicorn-conf.py /code/
-
-COPY beauty_be/ ./beauty_be
-COPY beauty_models/ ./beauty_models
+COPY . .
 
 RUN poetry config virtualenvs.create false \
-    && poetry install --no-ansi --no-root --no-dev
+    && poetry install --no-ansi
 
 CMD ["bash", "docker-entrypoint.sh"]

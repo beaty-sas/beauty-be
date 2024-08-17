@@ -1,7 +1,7 @@
+from beauty_be.models import Business
+from beauty_be.models import Location
 from beauty_be.services.base import BaseService
 from beauty_be.services.business import BusinessService
-from beauty_models.beauty_models.models import Business
-from beauty_models.beauty_models.models import Location
 
 
 class LocationService(BaseService[Location]):

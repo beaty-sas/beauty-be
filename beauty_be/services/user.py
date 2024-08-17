@@ -1,10 +1,10 @@
 from beauty_be.clients import aws_sqs_client
+from beauty_be.models import Booking
+from beauty_be.models import User
 from beauty_be.schemas.notification import SMSPayloadSchema
 from beauty_be.schemas.notification import SMSTemplate
 from beauty_be.schemas.user import UserSchema
 from beauty_be.services.base import BaseService
-from beauty_models.beauty_models.models import Booking
-from beauty_models.beauty_models.models import User
 
 
 class UserService(BaseService[User]):

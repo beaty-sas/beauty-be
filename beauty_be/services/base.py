@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Query
 from sqlalchemy.sql import Select
 
-from beauty_models.beauty_models.models import Base
+from beauty_be.models.base import Base
 
 ModelT = TypeVar('ModelT', bound=Base)
 
@@ -48,10 +48,10 @@ class BaseService(Generic[ModelT]):
             await self.session.commit()
         return obj
 
-    async def insert(self, values: dict) -> Base:
+    async def insert(self, values: dict) -> ModelT:
         return await self.insert_obj(self.MODEL(**values))
 
-    async def insert_obj(self, obj: Base, commit: bool = True) -> Base:
+    async def insert_obj(self, obj: ModelT, commit: bool = True) -> ModelT:
         now = datetime.datetime.now(tz=None)
         if hasattr(self.MODEL, 'created_at'):
             obj.created = now
