@@ -1,8 +1,8 @@
 from beauty_be.clients import aws_sqs_client
 from beauty_be.models import Booking
 from beauty_be.models import User
-from beauty_be.schemas.notification import SMSPayloadSchema
 from beauty_be.schemas.notification import SMSTemplate
+from beauty_be.schemas.notification import SQSNotificationSchema
 from beauty_be.schemas.user import UserSchema
 from beauty_be.services.base import BaseService
 
@@ -24,8 +24,10 @@ class UserService(BaseService[User]):
         if not user:
             return
 
-        body = SMSPayloadSchema(
-            phone_number=str(user.phone_number.replace(' ', '')),
+        destination = user.telegram_id or user.phone_number
+        body = SQSNotificationSchema(
+            destination=destination.replace(' ', ''),
+            provider='telegram' if user.telegram_id else 'sns',
             template=template,
             values={
                 'date_time': booking.start_time.strftime('%d.%m.%Y %H:%M'),

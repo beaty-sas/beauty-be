@@ -10,12 +10,8 @@ class SMSTemplate(str, Enum):
     ORDER_CANCELLED = 'ORDER_CANCELLED'
 
 
-class SMSPayloadSchema(BaseModel):
-    phone_number: str
+class SQSNotificationSchema(BaseModel):
+    destination: str
+    provider: str = 'sns'
     template: SMSTemplate
     values: dict[str, Any]
-
-
-class SQSNotificationSchema(BaseModel):
-    send_sms: bool = True
-    sms_data: SMSPayloadSchema

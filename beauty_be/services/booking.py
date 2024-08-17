@@ -21,8 +21,8 @@ from beauty_be.models import User
 from beauty_be.schemas.analytic import BookingAnalyticSchema
 from beauty_be.schemas.booking import BookingCreateSchema
 from beauty_be.schemas.booking import BookingUpdateSchema
-from beauty_be.schemas.notification import SMSPayloadSchema
 from beauty_be.schemas.notification import SMSTemplate
+from beauty_be.schemas.notification import SQSNotificationSchema
 from beauty_be.services.base import BaseService
 
 
@@ -33,7 +33,7 @@ class BookingService(BaseService[Booking]):
         if booking := await self.fetch_one(
                 filters=(self.MODEL.id == booking_id,),
                 options=(
-                        selectinload(self.MODEL.business),
+                        selectinload(self.MODEL.business).selectinload(Business.owner),
                         selectinload(self.MODEL.user),
                         selectinload(self.MODEL.offers),
                         selectinload(self.MODEL.attachments),
@@ -68,8 +68,11 @@ class BookingService(BaseService[Booking]):
 
     @staticmethod
     async def send_new_booking_notification(booking: Booking, user: User) -> None:
-        body = SMSPayloadSchema(
-            phone_number=booking.business.phone_number,
+        destination = booking.business.owner.telegram_id or booking.business.phone_number
+        provider = 'telegram' if booking.business.owner.telegram_id else 'sns'
+        body = SQSNotificationSchema(
+            destination=destination.replace(' ', ''),
+            provider=provider,
             template=SMSTemplate.NEW_ORDER,
             values={
                 'name': user.display_name,
