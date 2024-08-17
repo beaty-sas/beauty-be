@@ -20,3 +20,4 @@ class MerchantUpdateSchema(BaseModel):
     display_name: str | None = None
     phone_number: str | None = None
     logo_id: int | None = None
+    telegram_id: str | None = None

@@ -13,6 +13,7 @@ class Merchant(BaseModel):
     sub = Column(String(200), unique=True, nullable=False, index=True)
     display_name = Column(String(100), nullable=False)
     phone_number = Column(String(100), nullable=True)
+    telegram_id = Column(String(100), nullable=True)
 
     logo_id = Column(Integer, ForeignKey('attachments.id'))
 
